@@ -1,0 +1,154 @@
+{\rtf1\ansi\ansicpg936\cocoartf1561\cocoasubrtf200
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset134 PingFangSC-Regular;\f2\fnil\fcharset0 Menlo-Regular;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\csgray\c0;\csgray\c100000;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Basics of EOSIO Smart contract\
+Communication Model\
+EOSIO Smart Contracts communcate with each other in the form of action and shared memory database access\
+\
+There are two communication modes that can be defined within a contract\
+Inline:inline is graranteed to execute with the current transaction or unwind,no notifaction will be commuincated regardless of success of failur
+\f1 ,inline operates with the same scopes and authorities with the same scopes and authorities the original transaction had
+\f0 \
+Deferred:defer
+\f1 \'a3\'a8\'d1\'d3\'b3\'d9\'a3\'a9will get scheduled later at producer\'a1\'afs discretion,\
+\
+Action vc Transaction\
+A action represents a single operation, whereas a transaction is a collection of one or more actions, A contract and a account communicate in the form of actions, Action can be sent individually\
+\
+Action Name Restrictions\
+Action types are actually base32 encoded 64-bit integers,so it character a-z,1-5 and \'a1\'ae.\'a1\'af\
+\
+\
+Transaction Confirmation\
+Receving a transaction hash code not mean that the transaction has been confirmed,it only means that the node accepted it without error,\
+By means of confirmation, you should see the transaction in the transaction history with the block number of which it is inculded\
+\
+Smart contract files\
+To keep things simple we have created a tool called eosiocpp which can be used to bootstrap(\'d2\'fd\'b5\'bc) a new contract\
+eosiocpp -n $\{contract\} 
+\f0 \
+\
+Create a wallet\
+cleos wallet create\
+cleos wallet unlock\
+\
+All new blockchains start out with a master key for the sole initial account, eosio,
+\f1 \'b8\'c4
+\f0 private key
+\f1 \'bb\'e1\'d7\'d4\'b6\'af\'b5\'bc\'c8\'eb\'b5\'bd\'b4\'b4\'bd\'a8\'b5\'c4\'c7\'ae\'b0\'fc\'d6\'d0\'c8\'a5
+\f0 \
+cleos wallet import key\
+\
+loading Contract\
+Cleos set contract eosio(
+\f1 \'d5\'cb\'bb\'a7
+\f0 ) build/contracts/eosio.bios
+\f1 \'a3\'a8\'ce\'bb\'d6\'c3\'a3\'a9-p eosio \'a3\'a8\'d3\'c3\'cb\'ad\'c0\'b4\'c7\'a9\'c3\'fb\'a3\'a9\
+\
+The last argument to this call was -p eosio. This tell cleos to sign this action with active authority of eosio account,sgin the action using the private key for the eosio account that we omported earlier\
+\
+Any time you execute a transcation you will see output link\
+Exectue transaction: xxxxxxxxxxx\
+# eosio <= eosio:setcode\
+# eosio <= eosio:setabi\
+\
+
+\fs28 Creating Accounts\
+
+\fs24 We will create two account ,usr and tester ,and we will need to associate a key with each account ,int this example ,the same key will be used for both accounts\
+\
+Create key\
+Cleos create key\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f2\fs22 \cf2 \cb3 \CocoaLigature0 Private key: 5JDsZrmK9Hz58nEbf7BKWySr59guorH2s3NFUb8rScJZJdBjD9X\
+Public key: EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f1\fs24 \cf0 \cb1 \CocoaLigature1 \
+Create Two user Accounts\
+Cleos craete account eosio user 
+\f2\fs22 \cf2 \cb3 \CocoaLigature0 EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+#         eosio <= eosio::newaccount            \{"creator":"eosio","name":"user","owner":\{"threshold":1,"keys":[\{"key":"EOS6ABzLg7sHrokxSKXKne2ZoY1R...\
+\
+cleos create account eosio user EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
+\
+Note:the careate account subcommand requires two keys ,one for the Ownerkey and one for the ActiveKey,in this tutorail example the same key is used for both
+\f1\fs24 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+Because we are using the eosio::account_history_api_plugin we can query all accounts that are controlled by our key\
+Cleos get accounts [Public key],:\'cd\'a8\'b9\'fdkey\'b2\'e9\'d1\'af\'b9\'dc\'c0\'ed\'d5\'cb\'bb\'a7\
+Cleos get account [NAME]\'a3\'ba\'cd\'a8\'b9\'fd\'c3\'fb\'d7\'d6\'b2\'e9\'d1\'af\'d5\'cb\'bb\'a7\
+\
+\'ce\'aa\'c4\'b3\'b8\'f6\'d5\'cb\'bb\'a7\'b2\'bf\'ca\'f0\'ba\'cf\'d4\'bc\
+cleos create account eosio eosio.token [key]\
+\'b2\'bf\'ca\'f0\'ba\'cf\'d4\'bc\'b5\'bdeosio.token \'d5\'cb\'bb\'a7\'cf\'c2\'a3\'ac\'b2\'a2\'cd\'a8\'b9\'fdeosio.ken\'c7\'a9\'c3\'fb\
+\'d6\'bb\'d3\'d0\'b0\'d1\'ba\'cf\'d4\'bc\'b2\'bf\'ca\'f0\'c1\'cb\'b2\'c5\'c4\'dc\'b5\'f7\'d3\'c3\'cf\'e0\'b9\'d8\'b5\'c4\'ba\'af\'ca\'fd\
+\'bc\'b4\'a3\'bacleos push action eosio.token create(function) [argument] -p \
+Cleos set contract eosio.token build/contract/eosio.token -p eosio.toekn\
+Create the EOS Token\
+You can view the interface to eosio.token as defined by constract/eosio.token/eosio.token.hpp\
+\
+To create a new token we must call the create(\'a1\'ad) action with the proper(\'d5\'fd\'c8\'b7\'b5\'c4) arguments\
+.This command will use the symbol of the maximum supply to uniquely this token form other tokens\'a3\'a8\'cd\'a8\'b9\'fdmaximum_supply \'b2\'ce\'ca\'fd\'c0\'b4\'c7\'f8\'b1\'f0\'c6\'e4\'cb\'fbtokens\'a3\'a9\
+cleos push action eosio.token\'a3\'a8\'ba\'cf\'d4\'bc\'b5\'d8\'d6\'b7\'a3\'a9 create (action) \'a1\'ae[\'a1\'b0eosio\'a1\'b1:\'a1\'b110000000.0000 EOS\'a1\'b1,0,0,0]\'a1\'af\
+Or cleos push action eosio.token create \'a1\'ae\{\'a1\'b0issuer\'a1\'b1:\'a1\'b1eosio\'a1\'b1,\'a1\'b1maximun_supply\'a1\'b1:\'a1\'b110000000.000 EOS\'a1\'b1,\'a1\'b1can_freeze\'a1\'b1:0,\'a1\'b1can_recall\'a1\'b1:0,\'a1\'b1can_whitelist\'a1\'b1:0\}\'a1\'af\
+\
+\
+\
+Issue(\'c1\'f7\'b3\'f6) Tokens to Account \'a1\'aeUser\'a1\'af\
+Now that we have created the token,the issuer can issue new tokens to the account user we create earlier\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 Deploy Exchange Contract\
+Similar to the example shown above ,we can deploy the exchange contract,the exchange contract provides capabilities to create and trade currency\
+Cleos create account eosio exchange  
+\f2\fs22 \cf2 \cb3 \CocoaLigature0 EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
+\
+Cleos set contract exchange build/contracts/exchange -p exhcange\
+\
+Deploy Eosio.msig Contract\
+The eosio.msig contract allows mulitple parties to sign transaction asynchronously\
+EOSIO has multi-signature support at a base level ,but it requires a synch side channel where data is ferried Eosio.msig is a more user friendly(
+\f1 \'d3\'d1\'ba\'c3\'b5\'c4
+\f2 ) way of asyn proposing\
+
+\f1\fs24 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 cleos create account eosio eoio.msig 
+\f2\fs22 \cf2 \cb3 \CocoaLigature0 EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
+Cleos set contract eoio.msig build/contracts/eosio.msig -p eosio.msig
+\f1\fs24 \cf0 \cb1 \CocoaLigature1 \
+\
+\'c7\'ae\'b0\'fc\'c3\'dc\'c2\'eb\'a3\'ba\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f2\fs22 \cf2 \cb3 \CocoaLigature0 PW5KHjSvR7eYrmAsCmrVL7U7TwDVB8ofPUSYN6Lh4wi5iTR2o9iyF\
+\
+
+\f1 \'b4\'b4\'bd\'a8\'b5\'c4\'b5\'da\'d2\'bb\'b6\'d3key(\'b9\'dc\'c0\'eduser\'ba\'cdester)\
+
+\f2 Private key: 5JDsZrmK9Hz58nEbf7BKWySr59guorH2s3NFUb8rScJZJdBjD9X\
+Public key: EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f1\fs24 \cf0 \cb1 \CocoaLigature1 \'b4\'ed\'ce\'f3\'bc\'af\'ba\'cf\
+build eos \'b5\'c4\'ca\'b1\'ba\'f2\'cc\'e1\'ca\'be\'d4\'dausr/local\'cf\'c2\'ce\'de\'c8\'a8\'cf\'de\'b2\'d9\'d7\'f7\'a3\'ac\'bc\'d3\'c9\'cfsudo\'a3\'ac\'cc\'e1\'ca\'be brew\'b2\'bb\'c4\'dc\'d4\'d9root\'c8\'a8\'cf\'de\'cf\'c2\'b2\'d9\'d7\'f7\'a3\'ac\'b2\'a2\'c7\'d2\
+/usr/local can no longer be chown\'a1\'afn in high Sierra, insteat use \
+Sudo chown -R $\{whoami\} $\{brew \'a1\'aaprefix\} /*\
+\
+Could not find a package configuratio file provided by LLVM\
+Export LLVM_DIR=/usr/local/Cellar/lccm/4.0.0.1/lib/cmake\
+\
+Failed to find Gettext libintl (missing: Intl_INCLUDE_DIR) Call Stack (most recent call first):\
+\
+\'cd\'a8\'b9\'fd\'a3\'babrew link gettext \'a1\'aaforce\'c3\'fc\'c1\'ee}
