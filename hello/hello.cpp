@@ -7,7 +7,6 @@ public:
 	using contract::contract;
 	/// @aib action
 	void hi(account_name user) {
-		require_auth(user);
 		print("hello, ",name{user});
 	}
 	/* data */
