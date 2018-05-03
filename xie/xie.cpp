@@ -20,6 +20,7 @@ class xie:public eosio::contract {
 		void goodnight(const account_name from, const string msg) {
 			require_auth(from);
 			checkToAccount(from);
+			eosio::print("pass check");
 			nights.emplace(from,[&](auto & g){
 				g.from = from;
 				g.to = _self;
@@ -32,6 +33,7 @@ class xie:public eosio::contract {
 		void goodmorning(const account_name from, const string msg) {
 			require_auth(from);
 			checkToAccount(from);
+			eosio::print("pass check");
 			nights.emplace(from,[&](auto & g){
 				g.from = from;
 				g.to = _self;

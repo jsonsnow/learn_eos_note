@@ -31,7 +31,7 @@
  (table 6 6 anyfunc)
  (elem (i32.const 0) $__wasm_nullptr $_ZN3xie9goodnightEyNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE $_ZN3xie6lovetoEy $_ZN3xie7marrytoEy $_ZN3xie11goodmorningEyNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE $_ZN3xie6liketoEy)
  (memory $0 1)
- (data (i32.const 4) "Pc\00\00")
+ (data (i32.const 4) "`c\00\00")
  (data (i32.const 16) "chen\00")
  (data (i32.const 32) "account must be chen\00")
  (data (i32.const 64) "go one\00")
@@ -46,8 +46,9 @@
  (data (i32.const 464) "error reading iterator\00")
  (data (i32.const 496) "read\00")
  (data (i32.const 512) "\e4\b8\8d\e8\83\bd\e5\8f\8d\e6\82\94\00")
- (data (i32.const 528) "get\00")
- (data (i32.const 8944) "malloc_from_freed was designed to only be called after _heap was completely allocated\00")
+ (data (i32.const 528) "pass check\00")
+ (data (i32.const 544) "get\00")
+ (data (i32.const 8960) "malloc_from_freed was designed to only be called after _heap was completely allocated\00")
  (export "memory" (memory $0))
  (export "_ZeqRK11checksum256S1_" (func $_ZeqRK11checksum256S1_))
  (export "_ZN5eosio12require_authERKNS_16permission_levelE" (func $_ZN5eosio12require_authERKNS_16permission_levelE))
@@ -576,6 +577,9 @@
    )
    (i32.const 32)
   )
+  (call $prints
+   (i32.const 528)
+  )
   (i32.store offset=12
    (get_local $9)
    (get_local $0)
@@ -980,6 +984,9 @@
     (get_local $1)
    )
    (i32.const 32)
+  )
+  (call $prints
+   (i32.const 528)
   )
   (i32.store offset=12
    (get_local $9)
@@ -6772,7 +6779,7 @@
       (get_local $2)
      )
     )
-    (i32.const 528)
+    (i32.const 544)
    )
    (set_local $4
     (i32.load8_u
@@ -8926,7 +8933,7 @@
     (br_if $label$0
      (i32.eqz
       (tee_local $2
-       (i32.load offset=532
+       (i32.load offset=548
         (i32.const 0)
        )
       )
@@ -9800,7 +9807,7 @@
  )
  (func $malloc (param $0 i32) (result i32)
   (call $_ZN5eosio14memory_manager6mallocEm
-   (i32.const 536)
+   (i32.const 552)
    (get_local $0)
   )
  )
@@ -10045,7 +10052,7 @@
          )
         )
        )
-       (i32.const 8944)
+       (i32.const 8960)
       )
       (set_local $13
        (i32.add
@@ -10269,13 +10276,13 @@
    (block $label$1
     (br_if $label$1
      (i32.eqz
-      (i32.load8_u offset=9030
+      (i32.load8_u offset=9046
        (i32.const 0)
       )
      )
     )
     (set_local $7
-     (i32.load offset=9032
+     (i32.load offset=9048
       (i32.const 0)
      )
     )
@@ -10284,11 +10291,11 @@
    (set_local $7
     (current_memory)
    )
-   (i32.store8 offset=9030
+   (i32.store8 offset=9046
     (i32.const 0)
     (i32.const 1)
    )
-   (i32.store offset=9032
+   (i32.store offset=9048
     (i32.const 0)
     (tee_local $7
      (i32.shl
@@ -10339,7 +10346,7 @@
        )
       )
       (set_local $3
-       (i32.load offset=9032
+       (i32.load offset=9048
         (i32.const 0)
        )
       )
@@ -10347,7 +10354,7 @@
      (set_local $8
       (i32.const 0)
      )
-     (i32.store offset=9032
+     (i32.store offset=9048
       (i32.const 0)
       (get_local $3)
      )
@@ -10401,18 +10408,18 @@
      )
      (block $label$6
       (br_if $label$6
-       (i32.load8_u offset=9030
+       (i32.load8_u offset=9046
         (i32.const 0)
        )
       )
       (set_local $3
        (current_memory)
       )
-      (i32.store8 offset=9030
+      (i32.store8 offset=9046
        (i32.const 0)
        (i32.const 1)
       )
-      (i32.store offset=9032
+      (i32.store offset=9048
        (i32.const 0)
        (tee_local $3
         (i32.shl
@@ -10480,12 +10487,12 @@
        )
       )
       (set_local $6
-       (i32.load offset=9032
+       (i32.load offset=9048
         (i32.const 0)
        )
       )
      )
-     (i32.store offset=9032
+     (i32.store offset=9048
       (i32.const 0)
       (i32.add
        (get_local $6)
@@ -10745,7 +10752,7 @@
     (br_if $label$1
      (i32.lt_s
       (tee_local $2
-       (i32.load offset=8920
+       (i32.load offset=8936
         (i32.const 0)
        )
       )
@@ -10753,7 +10760,7 @@
      )
     )
     (set_local $3
-     (i32.const 8728)
+     (i32.const 8744)
     )
     (set_local $1
      (i32.add
@@ -10761,7 +10768,7 @@
        (get_local $2)
        (i32.const 12)
       )
-      (i32.const 8728)
+      (i32.const 8744)
      )
     )
     (loop $label$2
