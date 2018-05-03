@@ -17,12 +17,7 @@ class xie:public eosio::contract {
 		///@abi action
 		void goodnight(const account_name from, const string msg) {
 			require_auth(from);
-<<<<<<< HEAD
-			checkToAccount(from);
-			eosio::print("pass check");
-=======
 			night_index nights(_self,from);
->>>>>>> c896fe4bd3f0373cf9ce72bd558733e2961785ed
 			nights.emplace(from,[&](auto & g){
 				g.from = from;
 				g.content = msg;
@@ -34,14 +29,8 @@ class xie:public eosio::contract {
 		///@abi action
 		void goodmorning(const account_name from, const string msg) {
 			require_auth(from);
-<<<<<<< HEAD
-			checkToAccount(from);
-			eosio::print("pass check");
-			nights.emplace(from,[&](auto & g){
-=======
 			morning_index mornings(_self,from);
 			mornings.emplace(from,[&](auto & g){
->>>>>>> c896fe4bd3f0373cf9ce72bd558733e2961785ed
 				g.from = from;
 				g.content = msg;
 				g.ID = mornings.available_primary_key();
