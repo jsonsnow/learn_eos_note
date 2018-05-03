@@ -150,15 +150,15 @@ class xie:public eosio::contract {
 		 	uint64_t night_id = nights.available_primary_key() + 1;
 		 	uint64_t morning_id = mornings.available_primary_key() + 1;
 		 	eosio::print("早安问候: ",morning_id, "晚安问候: ",night_id);
-		 	if(night_id >= 10 && morning_id > 5) {
+		 	if(night_id >= 1095 && morning_id > 760) {
 		 		marryto(name);
 		 		return;
 		 	}
-		 	if(night_id >= 5 && morning_id > 2) {
+		 	if(night_id >= 730 && morning_id > 395) {
 		 		loveto(name);
 		 		return;
 		 	}
-		 	if(night_id >= 3 && morning_id > 1) {
+		 	if(night_id >= 365 && morning_id > 30) {
 		 		liketo(name);
 		 		return;
 		 	}
