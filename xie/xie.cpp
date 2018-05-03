@@ -12,146 +12,155 @@ class xie:public eosio::contract {
 		using contract::contract;
 		xie(account_name self):
 		eosio::contract(self),
-		mornings(_self,_self),
-		nights(_self,_self),
-		xie_girl(_self,_self){}
+		girl_xie(_self,_self){}
 
 		///@abi action
 		void goodnight(const account_name from, const string msg) {
 			require_auth(from);
-			checkToAccount(from);
+			night_index nights(_self,from);
 			nights.emplace(from,[&](auto & g){
 				g.from = from;
-				g.to = _self;
 				g.content = msg;
+				g.ID = nights.available_primary_key();
 			});
-			checkAcceptCount();
+			checkAcceptCount(from);
 		}
 
 		///@abi action
 		void goodmorning(const account_name from, const string msg) {
 			require_auth(from);
-			checkToAccount(from);
-			nights.emplace(from,[&](auto & g){
+			morning_index mornings(_self,from);
+			mornings.emplace(from,[&](auto & g){
 				g.from = from;
-				g.to = _self;
 				g.content = msg;
+				g.ID = mornings.available_primary_key();
 			});
-			checkAcceptCount();
+			checkAcceptCount(from);
 		}
 
 		///@abi action
 		void liketo(const account_name name) {
-			checkToAccount(name);
-			eosio::print("go one");
-			auto itr = xie_girl.find(_self);
-			eosio::print("go two");
-			if(itr == xie_girl.end()) {
-				xie_girl.emplace(name,[&](auto &xie){
+			auto itr = girl_xie.find(_self);
+			if(itr == girl_xie.end()) {
+				girl_xie.emplace(_self,[&](auto &xie){
 					xie.status = Status::like;
 					xie.to = name;
+					xie.name = _self;
+					eosio::print("add",eosio::name{name},eosio::name{_self});
 				});
 			} else {
 				eosio_assert(itr->status != Status::love || itr->status != Status::marry,"不能反悔");
-				xie_girl.modify(itr,itr->to,[&](auto & xie){
+				girl_xie.modify(itr,_self,[&](auto & xie){
 					xie.status = Status::like;
 					xie.to = name;
+					xie.name = _self;
+					eosio::print("modify",eosio::name{name},eosio::name{_self});
 				});
 			}
 		}
 
 		/// @abi action
 		void loveto(const account_name name) {
-			checkToAccount(name);
 			eosio::print("go one");
-			auto itr = xie_girl.find(_self);
+			auto itr = girl_xie.find(_self);
 			eosio::print("go two");
-			if(itr == xie_girl.end()) {
-				xie_girl.emplace(name,[&](auto & xie){
+			if(itr == girl_xie.end()) {
+				girl_xie.emplace(_self,[&](auto & xie){
 					xie.status = Status::love;
 					xie.to = name;
+					xie.name = _self;
+					eosio::print("add",eosio::name{name},eosio::name{_self});
 				});
 			} else {
 				eosio_assert(itr->status != Status::marry,"不能反悔");
-				xie_girl.modify(itr,itr->to,[&](auto & xie){
+				girl_xie.modify(itr,_self,[&](auto & xie){
 					xie.status = Status::love;
 					xie.to = name;
+					xie.name = _self;
+					eosio::print("modify",eosio::name{name},eosio::name{_self});
 				});
 			}
 		}
 		/// @abi action
-		void marryto(const account_name to) {
-			checkToAccount(to);
+		void marryto(const account_name name) {
 			eosio::print("go one");
-			auto itr = xie_girl.find(_self);
+			auto itr = girl_xie.find(_self);
 			eosio::print("go two");
-			if (itr == xie_girl.end()) {
-				xie_girl.emplace(to,[&](auto & xie){
-					xie.status = marry;
-					xie.to = to;
+			if (itr == girl_xie.end()) {
+				girl_xie.emplace(_self,[&](auto & xie){
+					xie.status = Status::marry;
+					xie.to = name;
+					xie.name = _self;
+					eosio::print("add",eosio::name{name},eosio::name{_self});
 				});
 			} else {
-				xie_girl.modify(itr,itr->to,[&](auto & xie){
+				girl_xie.modify(itr,_self,[&](auto & xie){
 					xie.status = Status::marry;
-					xie.to = to;
+					xie.to = name;
+					xie.name = _self;
+					eosio::print("modify",eosio::name{name},eosio::name{_self});
 				});
 			}
+		}
+
+		/// @abi action
+		void remove() {
+			auto itr = girl_xie.find(_self);
+			girl_xie.erase(itr);
 		}
 
 	private:
 		enum Status {normal,like,love,marry};
 
-		///@abi table night i64
+		/// @abi table night i64
 		struct night {
 			uint64_t ID;
 			account_name from;
-			account_name to;
 			std::string content;
-			uint64_t primary_key() const {return ID;}
-			EOSLIB_SERIALIZE(night,(ID)(from)(to)(content));
+			auto primary_key() const {return ID;}
+			EOSLIB_SERIALIZE(night,(ID)(from)(content));
 		};
 		typedef eosio::multi_index<N(night),night> night_index;
 
-		///@abi table morning i64
+		/// @abi table morning i64
 		struct morning {
 			uint64_t ID;
 			account_name from;
-			account_name to;
 			std::string content;
-			uint64_t primary_key() const {return ID;}
-			EOSLIB_SERIALIZE(morning,(ID)(from)(to)(content))
+			auto primary_key() const {return ID;}
+			EOSLIB_SERIALIZE(morning,(ID)(from)(content))
 		};
 		typedef eosio::multi_index<N(morning),morning> morning_index;
 
-		///@abi table xiegirl i64
-		struct xiegirl {
-			uint64_t ID;
-			uint8_t status;
+		/// @abi table girl i64
+		struct girl {
+			account_name name;
 			account_name to;
-			uint8_t primary_key() const {return ID;}
-			EOSLIB_SERIALIZE(xiegirl,(ID)(status)(to));
+			uint8_t status;
+			uint64_t primary_key() const { return name;}
+			EOSLIB_SERIALIZE(girl, (name)(to)(status));
 		};
-		typedef eosio::multi_index<N(xiegirl),xiegirl> xie_index;
+		typedef eosio::multi_index<N(girl),girl> girl_index;
 
-		morning_index mornings;
-		night_index nights;
-		xie_index xie_girl;
+		girl_index girl_xie;
 
-		void checkToAccount(const account_name to) {
-			eosio_assert(to == N(chen),"account must be chen");
-		}
-
-		void checkAcceptCount() {
-		 	auto itr_night = nights.find(_self);
-		 	auto itr_morning = mornings.find(_self);
-		 	if(itr_night->ID >= 365 && itr_morning->ID > 30) {
-		 		liketo(account_name("chen"));
+		void checkAcceptCount(account_name name) {
+		 	night_index nights(_self,name);
+		 	morning_index mornings(_self,name);
+		 	uint64_t night_id = nights.available_primary_key() + 1;
+		 	uint64_t morning_id = mornings.available_primary_key() + 1;
+		 	eosio::print("早安问候: ",morning_id, "晚安问候: ",night_id);
+		 	if(night_id >= 10 && morning_id > 5) {
+		 		marryto(name);
+		 		return;
 		 	}
-		 	if(itr_night->ID >= 730 && itr_morning->ID > 395) {
-		 		loveto(account_name("chen"));
+		 	if(night_id >= 5 && morning_id > 2) {
+		 		loveto(name);
+		 		return;
 		 	}
-		 	if(itr_night->ID >= 1095 && itr_morning->ID > 760) {
-		 		marryto(account_name("chen"));
+		 	if(night_id >= 3 && morning_id > 1) {
+		 		liketo(name);
+		 		return;
 		 	}
 		}
 };
