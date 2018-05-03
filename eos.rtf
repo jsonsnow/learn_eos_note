@@ -78,7 +78,7 @@ Cleos craete account eosio user
 \f2\fs22 \cf2 \cb3 \CocoaLigature0 EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
-\cf2 \cb3 #         eosio <= eosio::newaccount            \{"creator":"eosio","name":"user","owner":\{"threshold":1,"keys":[\{"key":"EOS6ABzLg7sHrokxSKXKne2ZoY1R...\
+#         eosio <= eosio::newaccount            \{"creator":"eosio","name":"user","owner":\{"threshold":1,"keys":[\{"key":"EOS6ABzLg7sHrokxSKXKne2ZoY1R...\
 \
 cleos create account eosio user EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n EOS6ABzLg7sHrokxSKXKne2ZoY1RgCRwKWRDCjtXHHFVUYwHqC96n\
 \
@@ -189,11 +189,74 @@ using namespace space\'a3\'bb\'c8\'ab\'b2\'bf\'ca\'b9\'d3\'c3
 \f2 Private key: 5JDsZrmK9Hz58nEbf7BKWySr59guorH2s3NFUb8rScJZJdBjD9X\
 Public key: cl\
 \
+<<<<<<< HEAD
 
 \f1 \'ce\'d2\'d3\'eb\'d0\'bb\'c0\'cf\'ca\'a6\'b5\'c4
 \f2 key\
 Private key: 5JJAhJTX3riFkkLWHi5uAyMiY2ZQiXnGYnQfFjt3xMWRQpH2yLY\
 Public key: EOS5d2dnwTJ5gU6iJz6wdFX4haz5bZfbwv5NmULAk1fGQbVZx2KZ3\
+=======
+\
+persistence api\
+const_iterator emplace(uint64_t payer,Lambda&&constructor)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1 \'b2\'e5\'c8\'eb\'d2\'bb\'b8\'f6\'d4\'aa\'cb\'d8\'a3\'ac\'cd\'a8\'b9\'fd
+\f2 Lambda
+\f1 \'b9\'b9\'d4\'ec
+\f2 \
+payer,account name of the payer for Storage usage of the new object,(
+\f1 \'c4\'c7\'b8\'f6\'d3\'c3\'bb\'a7\'ce\'aa\'b4\'e6\'b4\'a2\'d0\'c2\'b5\'c4\'b6\'d4\'cf\'f3\'d6\'a7\'b8\'b6
+\f2 )\
+\
+
+\f1 \'b7\'b5\'bb\'d8\'d6\'b5\'ce\'aa\'d2\'bb\'b8\'f6
+\f2  primary key\
+\
+
+\f1 \'c7\'b0\'cc\'e1\'cc\'f5\'bc\'fe
+\f2 \
+payer is a valid account that authorized the current action(and thus allowed to be billed for storage usage)\
+\
+
+\f1 \'d2\'ec\'b3\'a3\'a3\'a8Exceptions\'a3\'a9\
+the current receiver is not the account that owns the table(the code of multi_index)\
+\
+Get\
+Const object_type & get (uint64_t primary) const: Retrieves an existion object from a table using its primary key\
+\
+Primary primary key value of the object\
+\
+Returns :a constant reference to the object containing the specified primary key\
+\
+Exceptions No object mathes the given key\
+\
+Find \'d3\'ebget\'c0\'e0\'cb\'c6 \'b2\'bb\'b9\'fd\'b7\'b5\'bb\'d8\'d6\'b5\'ca\'c7\'d2\'bb\'b8\'f6iterator \
+\
+Modify\
+Void modify(const_iterator itr,uint64_t payer,Lambda && updater),:Modifies an existing object in a table\
+\
+Void modify(const object_type &obj,uint64_t payer,lambda&&updater)\
+\
+Payer, account name of the payer for the Storage usage of the updated row;a value of 0 indicates that the payer of the modified row is the same as the exsting payer.\
+Precondition\
+Itr points to ,or obj is an existing object in the table\
+\
+Payer is a valid account that authorized the current action(and thus allowed to be billed for storage usage)\
+\
+Postcondtion\
+The payer is charged for the storage usage of the updated object,\
+If payer is the same as the existing payer,payer only pays for the usage differnce between existing and updated object(\'c8\'e7\'b9\'fb\'d5\'e2\'b8\'f6\'b2\'ee\'d6\'b5\'ca\'c7\'b8\'ba\'ca\'fd\'a3\'ac\'be\'cd\'bb\'e1\'b5\'c3\'b5\'bd\'cd\'cb\'bf\'ee)\
+\
+if payer is different from the existing payer,the existing payer is refunded for teh storage usage of the existing object\
+\
+Exceptions\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f2 \
+\
+>>>>>>> c896fe4bd3f0373cf9ce72bd558733e2961785ed
 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
