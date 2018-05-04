@@ -40,6 +40,7 @@ class xie:public eosio::contract {
 
 		///@abi action
 		void liketo(const account_name name) {
+			checkAccount(name);
 			auto itr = girl_xie.find(_self);
 			if(itr == girl_xie.end()) {
 				girl_xie.emplace(_self,[&](auto &xie){
@@ -61,6 +62,7 @@ class xie:public eosio::contract {
 
 		/// @abi action
 		void loveto(const account_name name) {
+			checkAccount(name);
 			eosio::print("go one");
 			auto itr = girl_xie.find(_self);
 			eosio::print("go two");
@@ -83,6 +85,7 @@ class xie:public eosio::contract {
 		}
 		/// @abi action
 		void marryto(const account_name name) {
+			checkAccount(name);
 			eosio::print("go one");
 			auto itr = girl_xie.find(_self);
 			eosio::print("go two");
@@ -144,6 +147,9 @@ class xie:public eosio::contract {
 
 		girl_index girl_xie;
 
+		void checkAccount(const account_name name) {
+			eosio_assert(N(chen) == name,"account_name must be chen");
+		}
 		void checkAcceptCount(account_name name) {
 		 	night_index nights(_self,name);
 		 	morning_index mornings(_self,name);
