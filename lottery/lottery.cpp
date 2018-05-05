@@ -99,7 +99,7 @@ public:
 			//auto itr = games.find(g_id);
 			auto game_index = players.template get_index<N(bygid)>();
 			auto game_itr = game_index.find(g_id);
-			while(game_itr != players.end() && game_itr->g_id == g_id) {
+			while(game_itr != game_index.end() && game_itr->g_id == g_id) {
 				auto player = players.find(game_itr->p_id);
 				eosio::print("本局游戏ID：", g_id,"玩家名: ",N(player->player_name),"该玩家竞猜数：",player->number);
 				game_itr++;
