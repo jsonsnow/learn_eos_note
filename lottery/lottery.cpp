@@ -2,17 +2,20 @@
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/contract.hpp>
 #include <eosiolib/currency.hpp>
+#include <eosiolib/asset.hpp>
 
 using eosio::indexed_by;
 using eosio::const_mem_fun;
 using std::string;
+using eosio::currency;
 
 class lottery:public eosio::contract
 {
 public:
 	using contract::contract;
 	lottery(account_name self):eosio::contract(self),
-	games(_self,_self){}
+	games(_self,_self),
+	_currency(_self){}
 
 	/** 玩家加入游戏
 	* id 表示加入那句游戏
@@ -21,11 +24,20 @@ public:
 	void join(account_name name,uint64_t number,uint64_t id) {
 		require_auth(name);
 		auto itr = games.find(id);
-		//eosio::symbol_name s_name = symbol_name(EOS);
-		//eosio::asset sym = eosio::currency::get_balance(name,s_name);
-		//eosio_assert(sym.amount < itr->pay,"用户余额不足");
-		eosio_assert(itr->current_index >= 100,"已经达到人数最大限度");
+		eosio::symbol_name s_name = S(4,"EOS");
+		eosio::asset sym = _currency.get_balance(name,s_name);
+		eosio_assert(sym.amount < itr->pay,"用户余额不足");
+		eosio_assert(itr->current_index < 100 && itr->current_index >= 0,"已经达到人数最大限度");
 		palyer_table_type players(_self,_self);
+
+		auto game_index = players.template get_index<N(bygid)>();
+		auto game_itr = game_index.find(id);
+		while (game_itr != game_index.end() && game_itr->g_id == id) {
+			auto player = players.find(game_itr->p_id);
+			eosio::print("该局玩家: ",eosio::name{player->player_name});
+			eosio_assert(player->player_name != name,"已经加入该游戏");
+			game_itr++;
+		}
 
 		games.modify(itr,_self,[&](auto &g){
 			g.current_index = g.current_index + 1;
@@ -107,6 +119,7 @@ public:
 
 		}
 		game_index games;
+		currency _currency;
 
 };
 EOSIO_ABI(lottery,(join)(start)(open))
