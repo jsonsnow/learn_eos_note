@@ -198,6 +198,22 @@ Private key: 5JJAhJTX3riFkkLWHi5uAyMiY2ZQiXnGYnQfFjt3xMWRQpH2yLY\
 Public key: EOS5d2dnwTJ5gU6iJz6wdFX4haz5bZfbwv5NmULAk1fGQbVZx2KZ3\
 =======\
 persistence api\
+\
+How to create You EOSIO Multi-index Table\
+\
+1.Define your object(s) using C++ or struct,Each object will be in its own Multi-index table.\
+\
+2.Define a const member function in the class/struct called primary_key that returns the uint64_t primary key values of you object\
+\
+3.Determint the scondary indices, Up to 16 additional indices are supported,A secondary index supports serval key types,listed below\
+idx64\
+idx128\
+idx256\
+idx_double\
+idx_long_double\
+\
+4.Define a key extractor for each secondary index,the key extractor is afunction used to obatin the keys from the elments of the multi-index table.\
+\
 const_iterator emplace(uint64_t payer,Lambda&&constructor)\
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
 
