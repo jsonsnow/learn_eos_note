@@ -1,8 +1,8 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/contract.hpp>
-#include <eosiolib/currency.hpp>
 #include <eosiolib/asset.hpp>
+#include <eosiolib/currency.hpp>
 
 using eosio::indexed_by;
 using eosio::const_mem_fun;
@@ -15,7 +15,7 @@ public:
 	using contract::contract;
 	lottery(account_name self):eosio::contract(self),
 	games(_self,_self),
-	_currency(_self){}
+	_currency(N(eosio.token)){}
 
 	/** 玩家加入游戏
 	* id 表示加入那句游戏
@@ -24,9 +24,9 @@ public:
 	void join(account_name name,uint64_t number,uint64_t id) {
 		require_auth(name);
 		auto itr = games.find(id);
-		eosio::symbol_name s_name = S(4,"EOS");
-		eosio::asset sym = _currency.get_balance(name,s_name);
-		eosio_assert(sym.amount < itr->pay,"用户余额不足");
+		///eosio::symbol_name s_name = S(4,"EOS");
+		///eosio::asset sym = _currency.get_balance(name,s_name);
+		//eosio_assert(sym.amount < itr->pay,"用户余额不足");
 		eosio_assert(itr->current_index < 100 && itr->current_index >= 0,"已经达到人数最大限度");
 		palyer_table_type players(_self,_self);
 
@@ -56,7 +56,7 @@ public:
 	void start(uint64_t g_id) {
 		auto itr = games.find(g_id);
 		eosio_assert(itr != games.end(),"游戏不存在");
-		eosio_assert(itr->current_index != 100,"游戏人数不对，无法开始");
+		eosio_assert(itr->current_index == 100,"游戏人数不对，无法开始");
 		game_rule(g_id);
 	}
 
@@ -106,7 +106,7 @@ public:
 		typedef eosio::multi_index<N(player),player,indexed_by<N(bygid),const_mem_fun<player,uint64_t,&player::game_id>>> palyer_table_type;
 		
 
-		void game_rule(uint64_t g_id) {
+		void game_rule(const uint64_t g_id) {
 			palyer_table_type players(_self,_self);
 			//auto itr = games.find(g_id);
 			auto game_index = players.template get_index<N(bygid)>();
@@ -118,6 +118,9 @@ public:
 			}
 
 		}
+		void checkoutAmount(account_name name,uint64_t pay) {
+
+		} 
 		game_index games;
 		currency _currency;
 
