@@ -21,10 +21,12 @@ public:
 	void join(account_name name,uint64_t number,uint64_t id) {
 		require_auth(name);
 		auto itr = games.find(id);
+		eosio_assert(itr != games.end(),"该局游戏不存在");
 		//eosio::symbol_name s_name = symbol_name(EOS);
+		eosio::symbol_name s_name = S(4,"EOS");
 		//eosio::asset sym = eosio::currency::get_balance(name,s_name);
 		//eosio_assert(sym.amount < itr->pay,"用户余额不足");
-		eosio_assert(itr->current_index >= 100,"已经达到人数最大限度");
+		eosio_assert(itr->current_index < 100,"已经达到人数最大限度");
 		palyer_table_type players(_self,_self);
 
 		games.modify(itr,_self,[&](auto &g){
@@ -37,7 +39,25 @@ public:
 			p.p_id = players.available_primary_key();
 		});
 	}
+	/**支付失败的情况下从改句游戏中移除
+	*@abi action
+	*/
+	void removeplayer(uint64_t g_id,account_name name) {
+		auto itr = games.find(g_id);
+		eosio_assert(itr != games.end(),"该局游戏不存在");
 
+		palyer_table_type players(_self,_self);
+		auto game_index = players.template get_index<N(bygid)>();
+		auto game_itr = game_index.find(g_id);
+		while (game_itr != game_index.end() && game_itr->g_id == g_id) {
+			auto player = players.find(game_itr->p_id);
+			if(player->player_name == name) {
+				players.erase(player);
+				break;
+			}
+			game_itr++;
+		}
+	}
 	/** 开始游戏,游戏id
 	** @abi action
 	*/
@@ -101,7 +121,7 @@ public:
 			auto game_itr = game_index.find(g_id);
 			while(game_itr != game_index.end() && game_itr->g_id == g_id) {
 				auto player = players.find(game_itr->p_id);
-				eosio::print("本局游戏ID：", g_id,"玩家名: ",N(player->player_name),"该玩家竞猜数：",player->number);
+				eosio::print("本局游戏ID：", g_id,"玩家名: ",eosio::name{player->player_name},"该玩家竞猜数：",player->number);
 				game_itr++;
 			}
 
