@@ -24,19 +24,12 @@ public:
 	void join(account_name name,uint64_t number,uint64_t id) {
 		require_auth(name);
 		auto itr = games.find(id);
-<<<<<<< HEAD
-		///eosio::symbol_name s_name = S(4,"EOS");
-		///eosio::asset sym = _currency.get_balance(name,s_name);
-		//eosio_assert(sym.amount < itr->pay,"用户余额不足");
 		eosio_assert(itr->current_index < 100 && itr->current_index >= 0,"已经达到人数最大限度");
-=======
 		eosio_assert(itr != games.end(),"该局游戏不存在");
 		//eosio::symbol_name s_name = symbol_name(EOS);
 		eosio::symbol_name s_name = S(4,"EOS");
 		//eosio::asset sym = eosio::currency::get_balance(name,s_name);
 		//eosio_assert(sym.amount < itr->pay,"用户余额不足");
-		eosio_assert(itr->current_index < 100,"已经达到人数最大限度");
->>>>>>> 677add326c63d50571423b5344c1e2014dca9b87
 		palyer_table_type players(_self,_self);
 
 		auto game_index = players.template get_index<N(bygid)>();
@@ -58,7 +51,7 @@ public:
 			p.p_id = players.available_primary_key();
 		});
 	}
-	/**支付失败的情况下从改句游戏中移除
+	/**支付失败的情况下从改局游戏中移除
 	*@abi action
 	*/
 	void removeplayer(uint64_t g_id,account_name name) {
@@ -71,7 +64,11 @@ public:
 		while (game_itr != game_index.end() && game_itr->g_id == g_id) {
 			auto player = players.find(game_itr->p_id);
 			if(player->player_name == name) {
+				eosio::print("删除玩家： ",eosio::name{name});
 				players.erase(player);
+				games.modify(itr,_self,[&](auto &g){
+					g.current_index = g.current_index - 1;
+				});
 				break;
 			}
 			game_itr++;
@@ -129,6 +126,7 @@ public:
 		struct bygid {
 			uint64_t p_id;
 			uint64_t g_id;
+			EOSLIB_SERIALIZE(bygid,(p_id)(g_id));
 		};
 		typedef eosio::multi_index<N(player),player,indexed_by<N(bygid),const_mem_fun<player,uint64_t,&player::game_id>>> palyer_table_type;
 		
@@ -152,4 +150,4 @@ public:
 		currency _currency;
 
 };
-EOSIO_ABI(lottery,(join)(start)(open))
+EOSIO_ABI(lottery,(join)(removeplayer)(start)(open))
