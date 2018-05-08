@@ -7,12 +7,13 @@ using eosio::indexed_by;
 using eosio::const_mem_fun;
 using std::string;
 
-class lottery:public eosio::contract
-{
+class lottery:public eosio::contract {
+
 public:
 	using contract::contract;
 	lottery(account_name self):eosio::contract(self),
-	games(_self,_self){}
+	games(_self,_self),
+	players(_self,_self){}
 
 	/** 玩家加入游戏
 	* id 表示加入那句游戏
@@ -22,13 +23,15 @@ public:
 		require_auth(name);
 		auto itr = games.find(id);
 		eosio_assert(itr != games.end(),"该局游戏不存在");
-		//eosio::symbol_name s_name = symbol_name(EOS);
-		eosio::symbol_name s_name = S(4,"EOS");
-		//eosio::asset sym = eosio::currency::get_balance(name,s_name);
-		//eosio_assert(sym.amount < itr->pay,"用户余额不足");
 		eosio_assert(itr->current_index < 100,"已经达到人数最大限度");
-		palyer_table_type players(_self,_self);
+		auto player_game_index = players.get_index<N(bygid)>();
+		auto game_itr = player_game_index.find(id);
 
+		while(game_itr != player_game_index.end() && game_itr->g_id == id) {
+			eosio_assert(game_itr->player_name != name,"已经加入游戏");
+			eosio::print("遍历出的玩家：",eosio::name{game_itr->player_name} ,"玩家 id：",game_itr->p_id,"\n");
+			++game_itr;
+		}
 		games.modify(itr,_self,[&](auto &g){
 			g.current_index = g.current_index + 1;
 		});
@@ -46,16 +49,19 @@ public:
 		auto itr = games.find(g_id);
 		eosio_assert(itr != games.end(),"该局游戏不存在");
 
-		palyer_table_type players(_self,_self);
-		auto game_index = players.template get_index<N(bygid)>();
+		auto game_index = players.get_index<N(bygid)>();
 		auto game_itr = game_index.find(g_id);
 		while (game_itr != game_index.end() && game_itr->g_id == g_id) {
 			auto player = players.find(game_itr->p_id);
 			if(player->player_name == name) {
 				players.erase(player);
+				games.modify(itr,_self,[&](auto &g){
+					g.current_index = g.current_index - 1;
+				});
 				break;
 			}
-			game_itr++;
+			eosio::print("遍历出的玩家：",eosio::name{player->player_name} ,"玩家 id：",game_itr->p_id);
+			++game_itr;
 		}
 	}
 	/** 开始游戏,游戏id
@@ -107,26 +113,23 @@ public:
 			EOSLIB_SERIALIZE(player,(p_id)(player_name)(g_id)(number));
 		};
 		/// 玩家的二级索引，通过g_id检索玩家
-		struct bygid {
-			uint64_t p_id;
-			uint64_t g_id;
-		};
+	
 		typedef eosio::multi_index<N(player),player,indexed_by<N(bygid),const_mem_fun<player,uint64_t,&player::game_id>>> palyer_table_type;
 		
 
 		void game_rule(uint64_t g_id) {
-			palyer_table_type players(_self,_self);
 			//auto itr = games.find(g_id);
-			auto game_index = players.template get_index<N(bygid)>();
+			auto game_index = players.get_index<N(bygid)>();
 			auto game_itr = game_index.find(g_id);
 			while(game_itr != game_index.end() && game_itr->g_id == g_id) {
 				auto player = players.find(game_itr->p_id);
 				eosio::print("本局游戏ID：", g_id,"玩家名: ",eosio::name{player->player_name},"该玩家竞猜数：",player->number);
-				game_itr++;
+				++game_itr;
+				eosio::print("遍历出的玩家：",eosio::name{player->player_name} ,"玩家 id：",game_itr->p_id);
 			}
-
 		}
 		game_index games;
+		palyer_table_type players;
 
 };
-EOSIO_ABI(lottery,(join)(start)(open))
+EOSIO_ABI(lottery,(join)(removeplayer)(start)(open))
