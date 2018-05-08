@@ -40,7 +40,7 @@ public:
 		});
 	}
 	/**支付失败的情况下从改句游戏中移除
-	*@abi action
+	* @abi action
 	*/
 	void removeplayer(uint64_t g_id,account_name name) {
 		auto itr = games.find(g_id);
