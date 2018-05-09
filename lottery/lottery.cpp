@@ -3,10 +3,6 @@
 #include <eosiolib/contract.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/currency.hpp>
-#include <stdlib.h>
-#include <time.h>
-#include <eosiolib/crypto.h>
-#include <utility>
 
 using eosio::indexed_by;
 using eosio::const_mem_fun;
@@ -19,9 +15,8 @@ public:
 	using contract::contract;
 	lottery(account_name self):eosio::contract(self),
 	games(_self,_self),
-	players(_self,_self),
-	accounts(_self,_self){}
-	
+	players(_self,_self){}
+
 	/** 玩家加入游戏
 	* id 表示加入那句游戏
 	* @abi action
@@ -54,6 +49,7 @@ public:
 	* @abi action
 	*/
 	void removeplayer(uint64_t g_id,account_name name) {
+		has_auth();
 		auto itr = games.find(g_id);
 		eosio_assert(itr != games.end(),"该局游戏不存在");
 
@@ -94,31 +90,6 @@ public:
 			g.pay = pay;
 		});
 	}
-
-	///@abi test rand function
-	void test() {
-		eosio::print("产生的随机数：", rand_number());
-	}
-
-	///@abi action
-	void withDraw(const account_name to,const asset &quantity) {
-		require_auth(to);
-
-	}
-
-	///@abi action
-	void deposit(const account_name from,const asset & quantity) {
-		eosio_assert(quantity.is_valid(),"invalid quantity");
-		eosio_assert(quantity.amount > 0,"must deposit positive quantity");
-
-		auto itr = accounts.find(from);
-		if(itr == accounts.end()) {
-			itr = accounts.emplace(_self,[&](auto &acnt){
-				acnt.owner = from;
-			});
-		}
-		action(per)
-	}
 	private:
 
 		///@abi table game i64
@@ -146,19 +117,8 @@ public:
 
 			EOSLIB_SERIALIZE(player,(p_id)(player_name)(g_id)(number));
 		};
-
-		///@abi table account i64
-		struct account {
-			account(account_name o = account_name()):owner(0){}
-			account_name owner;
-			asset eos_balance;//need fix ,
-
-			uint64_t primary_key() const {return owner;}
-
-			EOSLIB_SERIALIZE(action,(owner)(eos_balance));
-		};
 		/// 玩家的二级索引，通过g_id检索玩家
-		typedef eosio::multi_index<N(account),account> account_index;
+
 	
 		typedef eosio::multi_index<N(player),player,indexed_by<N(bygid),const_mem_fun<player,uint64_t,&player::game_id>>> palyer_table_type;
 		
@@ -171,21 +131,11 @@ public:
 				++game_itr;
 			}
 		}
-		void checkout_amount(account_name name,uint64_t pay) {
+		void checkoutAmount(account_name name,uint64_t pay) {
 
 		} 
-		uint32_t rand_number() {
-			return rand_number_a_to_b(1,48);
-		}
-
-		uint32_t rand_number_a_to_b(uint32_t a, uint32_t b) {
-			uint32_t number = std::rand() % (b - a + 1) + a;
-			return number;
-		}
 		game_index games;
 		palyer_table_type players;
-		account_index accounts;
-
 
 };
-EOSIO_ABI(lottery,(join)(removeplayer)(start)(open)(test))
+EOSIO_ABI(lottery,(join)(removeplayer)(start)(open))
