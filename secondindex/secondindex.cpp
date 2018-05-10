@@ -30,6 +30,8 @@ public:
 
 			eosio::print("客户名： ",eosio::name{cus_itr->customer},"里程： ",cus_itr->odomerter,"客户ID：",cus_itr->pkey,"\n");
 			++cus_itr;
+			//cus_itr = cus_itr++;
+			//cus_itr++;
 			index ++;
 			if (index > 10)
 			{
