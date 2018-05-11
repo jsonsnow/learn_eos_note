@@ -21,11 +21,10 @@ public:
 	lottery(account_name self):eosio::contract(self),
 	games(_self,_self),
 	players(_self,_self),
-	accounts(_self,_self),
 	onetoonegames(_self,_self),
+	one2oneres(_self,_self),
 	dicegames(_self,_self),
-	globals(_self,_self),
-	one2oneres(_self,_self){}
+	diceres(_self,_self){}
 	
 	/** 玩家加入游戏
 	* id 表示加入那句游戏
@@ -42,7 +41,7 @@ public:
 
 		while(game_itr != player_game_index.end() && game_itr->g_id == id) {
 			eosio_assert(game_itr->player_name != name,"已经加入游戏");
-			eosio::print("遍历出的玩家：",eosio::name{game_itr->player_name} ,"玩家 id：",game_itr->p_id,"\n");
+			eosio::print("遍历出的玩家：",eosio::name{game_itr->player_name} ,"玩家 id：",game_itr->r_id,"\n");
 			++game_itr;
 		}
 		games.modify(itr,_self,[&](auto &g){
@@ -67,7 +66,7 @@ public:
 		dicegames.emplace(_self,[&](auto &g){
 			g.g_id = dicegames.available_primary_key();
 			g.player_num = player_num;
-			p.banker = _self;
+			g.banker = _self;
 		});
 	}
 	/**
@@ -75,7 +74,7 @@ public:
 	*abi action 玩家加入摇色子游戏
 	*/
 
-	void joindicegame(uint64_t g_id,account_name name,aseet quantity,DiceDetainType detain_type) {
+	void joindicegame(uint64_t g_id,account_name name,asset quantity,uint8_t detain_type) {
 		require_auth(name);//需要用户授权才能扣除用户资金
 		eosio_assert(detain_type == DiceDetainType::big|| detain_type == DiceDetainType::small 
 			|| detain_type == DiceDetainType::leopard,"押注类型错误");
@@ -135,7 +134,7 @@ public:
 		if(result <= 9) {
 			type = DiceDetainType::small;
 		}
-		if(one == two && two = three) {
+		if((one==two) && (two == three)) {
 			type = DiceDetainType::leopard;
 		}
 
@@ -178,24 +177,24 @@ public:
 		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
 		eosio_assert(itr->end == true,"已经开奖");
 
-		auto dice_game_index = dicegames.get_index<N(bygid)>();
-		auto game_itr = dice_game_index.find(id);
+		auto dice_game_index = diceres.get_index<N(bygid)>();
+		auto game_itr = dice_game_index.find(g_id);
 		while(game_itr != dice_game_index.end() && game_itr->g_id == g_id) {
 			//返还用户金额
 			action(permission_level{_self,N(active)},
 				N(eosio.token),N(transfer),
-				std::make_tuple(_self,game_itr->player_name,game_itr->aseet,string(""))
+				std::make_tuple(_self,game_itr->player_name,game_itr->asset,string(""))
 				).send();
 			++game_itr;
 		}
-		onetoonegames.modify(itr,_self,[&](auto &g){
+		dicegames.modify(itr,_self,[&](auto &g){
 				g.randseed = 0;
 				g.end = true;
 			});
 	}
 
 	/// @abi action 加入双人游戏
-	void joinonetoone(uint64_t g_id,account_name name,aseet quantity,uint8_t number) {
+	void joinonetoone(uint64_t g_id,account_name name,asset quantity,uint8_t number) {
 		require_auth(name);
 		eosio_assert(number == 1 || number == 0,"竞猜数字只能是1或者0");
 		eosio_assert(quantity.is_valid(),"invalid quantity");
@@ -216,19 +215,19 @@ public:
 		if(itr->player_num == 0) {
 			onetoonegames.modify(itr,_self,[&](auto & g){
 				g.player_num = 1;
-				g.aseet = aseet;
+				g.bet = quantity;
 			});
 		} else {
-			eosio_assert(quantity == itr->aseet,"玩家之间筹码需要一致");
+			eosio_assert(quantity == itr->bet,"玩家之间筹码需要一致");
 			onetoonegames.modify(itr,_self,[&](auto & g){
 				g.player_num = 2;
 			});
 		}
 		one2oneres.emplace(_self,[&](auto &r){
-			p.r_id = players.available_primary_key();
-			p.number = number;
-			p.g_id = g_id;
-			p.date = time();
+			r.r_id = players.available_primary_key();
+			r.number = number;
+			r.g_id = g_id;
+			r.date = time();
 		});
 		///转入金额到lotter账户
 		action(permission_level{_self,N(active)},
@@ -250,7 +249,7 @@ public:
 		eosio_assert(itr->player_num == 2,"人数未满");
 
 		auto player_game_index = one2oners.get_index<N(bygid)>();
-		auto game_itr = player_game_index.find(id);
+		auto game_itr = player_game_index.find(g_id);
 		while (game_itr != player_game_index.end() && game_itr->g_id == g_id) {
 			if(game_itr->number == result) {
 				// lotter 账户转账资产到赢的玩家
@@ -281,7 +280,7 @@ public:
 		eosio_assert(itr->end == true,"已经开奖");
 
 		auto player_game_index = one2oneres.get_index<N(bygid)>();
-		auto game_itr = player_game_index.find(id);
+		auto game_itr = player_game_index.find(g_id);
 		while(game_itr != player_game_index.end() && game_itr->g_id == g_id) {
 
 			//返还用户金额
@@ -321,7 +320,7 @@ public:
 		auto game_index = players.get_index<N(bygid)>();
 		auto game_itr = game_index.find(g_id);
 		while (game_itr != game_index.end() && game_itr->g_id == g_id) {
-			auto player = players.find(game_itr->p_id);
+			auto player = players.find(game_itr->r_id);
 			if(player->player_name == name) {
 				eosio::print("删除玩家： ",eosio::name{name});
 				players.erase(player);
@@ -330,7 +329,7 @@ public:
 				});
 				break;
 			}
-			eosio::print("遍历出的玩家：",eosio::name{player->player_name} ,"玩家 id：",game_itr->p_id);
+			eosio::print("遍历出的玩家：",eosio::name{player->player_name} ,"玩家 id：",game_itr->r_id);
 			++game_itr;
 		}
 	}
@@ -403,7 +402,7 @@ public:
 		///@abi table onetoonegame i64
 		struct onetoonegame:public basegame {
 
-			aseet bet;//赌注
+			asset bet;//赌注
 			uint8_t player_num = 0;
 
 			EOSLIB_SERIALIZE(onetoonegame,(g_id)(randseed)(end)(date)(bet)(player_num))
@@ -412,7 +411,7 @@ public:
 
 		typedef eosio::multi_index<N(onetoonegame),onetoonegame> onetoonegame_index;
 		typedef eosio::multi_index<N(dicegame),dicegame> dicegame_index;
-		typedef eosio::multi_index<N(game),game> game_index;
+		typedef eosio::multi_index<N(lotterygame),lotterygame> game_index;
 
 		///@abi table player i64
 		struct player {
@@ -422,14 +421,14 @@ public:
 			uint64_t g_id;
 			uint64_t number;
 			GameType type;//本局参加的游戏
-			auto primary_key() const {return p_id;}
+			auto primary_key() const {return r_id;}
 			uint64_t game_id() const {return g_id;}
 
-			EOSLIB_SERIALIZE(player,(p_id)(player_name)(g_id)(number)(type));
+			EOSLIB_SERIALIZE(player,(r_id)(player_name)(g_id)(number)(type));
 		};
 
-		/// @abi table onetoonerecord i64
-		struct onetoonerecord {
+		/// @abi table one2onerecord i64
+		struct pairrecord {
 
 			uint64_t r_id;
 			account_name player_name;
@@ -439,7 +438,7 @@ public:
 			auto primary_key() const {return r_id;}
 			uint64_t game_id() const {return g_id;}
 
-			EOSLIB_SERIALIZE(onetoonerecord,(r_id)(player_name)(g_id)(number));
+			EOSLIB_SERIALIZE(pairrecord,(r_id)(player_name)(g_id)(number));
 		};
 		
 		/// @abi table dicerecord i64
@@ -448,7 +447,7 @@ public:
 			account_name player_name;
 			uint64_t g_id;
 			DiceDetainType detain_type;
-			aseet bet;//本次押注
+			asset bet;//本次押注
 
 			auto primary_key() const {return r_id;}
 			uint64_t game_id() const {return g_id;}
@@ -457,7 +456,7 @@ public:
 
 		};
 		
-		typedef eosio::multi_index<N(onetoonerecord),onetoonerecord,indexed_by<N(bygid),const_mem_fun<onetoonerecord,uint64_t,&onetoonerecord::game_id>>> one2one_record_table_type;
+		typedef eosio::multi_index<N(pairrecord),pairrecord,indexed_by<N(bygid),const_mem_fun<pairrecord,uint64_t,&pairrecord::game_id>>> pair_record_table_type;
 		typedef eosio::multi_index<N(player),player,indexed_by<N(bygid),const_mem_fun<player,uint64_t,&player::game_id>>> palyer_table_type;
 		typedef eosio::multi_index<N(dicerecord),dicerecord indexed_by<N(bygid),const_mem_fun<dicerecord,uint64_t,&dicerecord::game_id>>> dice_record_table_type;
 		
@@ -484,10 +483,10 @@ public:
 		onetoonegame_index onetoonegames;
 	
 		palyer_table_type players;
-		one2one_record_table_type one2oneres;
+		pair_record_table_type one2oneres;
 		dice_record_table_type diceres;
 
 
 
 };
-EOSIO_ABI(lottery,(join)(removeplayer)(start)(open)(test))
+EOSIO_ABI(lottery,(joindicegame)(joindice)(removeplayer)(start)(open))
