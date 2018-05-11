@@ -21,13 +21,17 @@ public:
 	lottery(account_name self):eosio::contract(self),
 	games(_self,_self),
 	players(_self,_self),
-	accounts(_self,_self){}
+	accounts(_self,_self),
+	onetoonegames(_self,_self),
+	dicegames(_self,_self),
+	globals(_self,_self),
+	one2oneres(_self,_self){}
 	
 	/** 玩家加入游戏
 	* id 表示加入那句游戏
 	* @abi action
 	*/
-	void join(account_name name,uint64_t number,uint64_t id) {
+	void joindice(account_name name,uint64_t number,uint64_t id) {
 		require_auth(name);
 		auto itr = games.find(id);
 		eosio_assert(itr->current_index < 100 && itr->current_index >= 0,"已经达到人数最大限度");
@@ -51,7 +55,263 @@ public:
 			p.p_id = players.available_primary_key();
 		});
 	}
-	/**支付失败的情况下从改句游戏中移除
+
+
+	/**
+	摇色子游戏庄家需要拥有的筹码
+	*@abi action 开一局摇色子游戏
+	*/
+	void opendicegame(account_name banker,uint8_t player_num) {
+		require_auth(_self);//必须是我们自己开庄
+		eosio_assert(player_num > 0,"最少设置一个玩家参加");
+		dicegames.emplace(_self,[&](auto &g){
+			g.g_id = dicegames.available_primary_key();
+			g.player_num = player_num;
+			p.banker = _self;
+		});
+	}
+	/**
+
+	*abi action 玩家加入摇色子游戏
+	*/
+
+	void joindicegame(uint64_t g_id,account_name name,aseet quantity,DiceDetainType detain_type) {
+		require_auth(name);//需要用户授权才能扣除用户资金
+		eosio_assert(detain_type == DiceDetainType::big|| detain_type == DiceDetainType::small 
+			|| detain_type == DiceDetainType::leopard,"押注类型错误");
+		eosio_assert(quantity.is_valid(),"invalid quantity");
+		eosio_assert(quantity.amount > 0,"amount must positive quantity");
+		check_my_asset(quantity);
+
+		auto itr = dicegames.find(g_id);
+		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
+		eosio_assert(itr->current_index == itr->player_num,"人数已满");
+
+		auto dice_game_index = diceres.get_index<N(bygid)>();
+		auto game_itr = dice_game_index.find(g_id);
+		while(game_itr != dice_game_index.end() && game_itr->g_id == g_id) {
+			eosio_assert(game_itr->player_name != name,"已经加入游戏");
+			++game_itr;
+		}
+
+		diceres.emplace(_self,[&](auto &r){
+			r.r_id = diceres.available_primary_key();
+			r. g_id = g_id;
+			r.detain_type = detain_type;
+			r.bet = quantity;
+			r.player_name = name;
+		});
+		diceres.emplace(itr,_self,[&](auto &g){
+
+			g.current_index = r.current_index + 1;
+		});
+		action(permission_level{_self,N(active)},
+			N(eosio.token),N(transfer),
+			std::make_tuple(name,_self,aseet,string(""))
+			).send();
+
+	}
+
+	/**
+
+	*abi action 开奖摇色子游戏
+	*/
+	void startdciegame(uint64_t g_id, uint8_t one, uint8_t two,uint8_t three ,uint64_t randseed) {
+		require_auth(_self);
+		eosio_assert(one>=1 && one<= 6,"传入开奖号码有误");
+		eosio_assert(two>=1 && two<= 6,"传入开奖号码有误");
+		eosio_assert(three>=1 && three<= 6,"传入开奖号码有误");
+
+		auto itr = dicegames.find(g_id);
+		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
+		eosio_assert(itr->end == true,"已经开奖");
+		eosio_assert(itr->player_num == itr->current_index,"未达到要求人数");
+
+		DiceDetainType type;
+		uint8_t result = one + two + three;
+		if(result >= 10 ){
+			type = DiceDetainType::big;
+		}
+		if(result <= 9) {
+			type = DiceDetainType::small;
+		}
+		if(one == two && two = three) {
+			type = DiceDetainType::leopard;
+		}
+
+		auto dice_game_index = diceres.get_index<N(bygid)>();
+		auto game_itr = dice_game_index.find(g_id);
+		while(game_itr != dice_game_index.end() && game_itr->g_id == g_id) {
+			if(game_itr->detain_type == type) {
+				///豹子发放三倍奖励
+				if(type == DiceDetainType::leopard) {
+					action(permission_level{_self,N(active)},
+					N(eosio.token),N(transfer),
+					std::make_tuple(_self,game_itr->player_name,itr->aseet * 4,std::string(""))
+					).send();
+				} else {
+					action(permission_level{_self,N(active)},
+						N(eosio.token),N(transfer),
+						std::make_tuple(_self,game_itr->player_name,itr->aseet * 2,std::string(""))
+						).send();
+				}
+			}
+			++game_itr;
+		}
+		dicegames.modify(itr,_self,[&](auto &g){
+					g.randseed = randseed;
+					g.end = true;
+					g.one = one;
+					g.two = two;
+					g.three = three;
+				});
+
+	}
+
+	/**
+	* 游戏一直未满，管理员主动结束，返回资金给竞猜者
+	* @abi action 
+	*/
+	void stopdicegame(uint64_t g_id) {
+		require_auth(_self);
+		auto itr = dicegames.find(g_id);
+		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
+		eosio_assert(itr->end == true,"已经开奖");
+
+		auto dice_game_index = dicegames.get_index<N(bygid)>();
+		auto game_itr = dice_game_index.find(id);
+		while(game_itr != dice_game_index.end() && game_itr->g_id == g_id) {
+			//返还用户金额
+			action(permission_level{_self,N(active)},
+				N(eosio.token),N(transfer),
+				std::make_tuple(_self,game_itr->player_name,game_itr->aseet,string(""))
+				).send();
+			++game_itr;
+		}
+		onetoonegames.modify(itr,_self,[&](auto &g){
+				g.randseed = 0;
+				g.end = true;
+			});
+	}
+
+	/// @abi action 加入双人游戏
+	void joinonetoone(uint64_t g_id,account_name name,aseet quantity,uint8_t number) {
+		require_auth(name);
+		eosio_assert(number == 1 || number == 0,"竞猜数字只能是1或者0");
+		eosio_assert(quantity.is_valid(),"invalid quantity");
+		eosio_assert(quantity.amount > 0,"amount must positive quantity");
+		check_my_asset(quantity);
+
+		auto itr = onetoonegames.find(g_id);
+		eosio_assert(itr != onetoonegames.end(),"该局游戏不存在");
+		eosio_assert(itr->player_num <= 2,"已经达到人数最大限制");
+
+		auto one2one_game_index = one2oneres.get_index<N(bygid)>();
+		auto game_itr = one2one_game_index.find(g_id);
+		while(game_itr != one2one_game_index.end() && game_itr->g_id == g_id) {
+			eosio_assert(game_itr->player_name != name,"已经加入游戏");
+			eosio_assert(game_itr->number == number,"不能竞猜同一结果");
+			++game_itr;
+		}
+		if(itr->player_num == 0) {
+			onetoonegames.modify(itr,_self,[&](auto & g){
+				g.player_num = 1;
+				g.aseet = aseet;
+			});
+		} else {
+			eosio_assert(quantity == itr->aseet,"玩家之间筹码需要一致");
+			onetoonegames.modify(itr,_self,[&](auto & g){
+				g.player_num = 2;
+			});
+		}
+		one2oneres.emplace(_self,[&](auto &r){
+			p.r_id = players.available_primary_key();
+			p.number = number;
+			p.g_id = g_id;
+			p.date = time();
+		});
+		///转入金额到lotter账户
+		action(permission_level{_self,N(active)},
+			N(eosio.token),N(transfer),
+			std::make_tuple(name,_self,aseet,std::string(""))
+			).send();
+	}
+
+	/**
+	*@abi action 开一局两人对战游戏，
+	*/
+	void startonotoonegame(uint64_t g_id,uint8_t result,uint64_t randseed) {
+		require_auth(_self);//需要管理者签名,因为需要管理者向赢钱的加入游戏
+		eosio_assert(result == 0 || result == 1,"请传入正确的竞猜结果");
+
+		auto itr = onetoonegames.find(g_id);
+		eosio_assert(itr != onetoonegames.end(),"该局游戏不存在");
+		eosio_assert(itr->end == true,"已经开奖");
+		eosio_assert(itr->player_num == 2,"人数未满");
+
+		auto player_game_index = one2oners.get_index<N(bygid)>();
+		auto game_itr = player_game_index.find(id);
+		while (game_itr != player_game_index.end() && game_itr->g_id == g_id) {
+			if(game_itr->number == result) {
+				// lotter 账户转账资产到赢的玩家
+				action(permission_level{_self,N(active)},
+					N(eosio.token),N(transfer),
+					std::make_tuple(_self,game_itr->player_name,itr->aseet * 2,std::string(""))
+					).send();
+				//获胜者和标记游戏已经结束
+				onetoonegames.modify(itr,_self,[&](auto &g){
+					g.win = game_itr->player_name;
+					g.randseed = randseed;
+					g.end = true;
+				});
+				break;
+			}
+			++game_itr;
+		}
+	}
+
+	/**
+	* 游戏一直未满，管理员主动结束，返回资金给竞猜者
+	* @abi action 
+	*/
+	void stopone2onegame(uint64_t g_id) {
+		require_auth(_self);
+		auto itr = onetoonegames.find(g_id);
+		eosio_assert(itr != onetoonegames.end(),"该局游戏不存在");
+		eosio_assert(itr->end == true,"已经开奖");
+
+		auto player_game_index = one2oneres.get_index<N(bygid)>();
+		auto game_itr = player_game_index.find(id);
+		while(game_itr != player_game_index.end() && game_itr->g_id == g_id) {
+
+			//返还用户金额
+			action(permission_level{_self,N(active)},
+				N(eosio.token),N(transfer),
+				std::make_tuple(_self,game_itr->player_name,game_itr->aseet,string(""))
+				).send();
+			onetoonegames.modify(itr,_self,[&](auto &g){
+				g.win = game_itr->player_name;
+				g.randseed = 0;
+				g.end = true;
+			});
+			++game_itr;
+		}
+	}
+
+	/**
+	* 开一局两人竞猜游戏，
+	* account_name 参数无意义，随便传
+	*/
+	void openone2onegame(account_name name) {
+		require_auth(_self);//只有lottery账户有权限开启一局新的游戏
+		onetoonegames.emplace(_self,[&](auto &g){
+			g.g_id = onetoonegames.available_primary_key();
+			g.date = time();
+		});
+	}
+
+
+	/**支付失败的情况下从改局游戏中移除
 	* @abi action
 	*/
 	void removeplayer(uint64_t g_id,account_name name) {
@@ -96,82 +356,110 @@ public:
 		});
 	}
 
-	///@abi test rand function
-	void test() {
-		eosio::print("产生的随机数：", rand_number());
-	}
 
-	///@abi action
-	void withDraw(const account_name to,const asset &quantity) {
-		require_auth(to);
-
-	}
-
-	///@abi action
-	// void deposit(const account_name from,const asset & quantity) {
-	// 	require_auth(from);
-	// 	eosio_assert(quantity.is_valid(),"invalid quantity");
-	// 	eosio_assert(quantity.amount > 0,"must deposit positive quantity");
-
-	// 	auto itr = accounts.find(from);
-	// 	if(itr == accounts.end()) {
-	// 		itr = accounts.emplace(_self,[&](auto &acnt){
-	// 			acnt.owner = from;
-	// 		});
-	// 	}
-	// 	action(
-	// 		permission_level{from,N(active)}),
-	// 		N(eosio.token),N(transfer),
-	// 		std::make_tuple(from,_self,quantity,std::string(""))
-	// 	).send();
-	
-	// 	accounts.modify(itr,0,[&](auto & acnt){
-	// 		acnt.eos_balance += quantity;
-	// 	});
-	// }
 	private:
 
-		///@abi table game i64
-		struct game {
+		enum GameType {dice_game,one_to_one_game,lotter_game};
 
+		/**
+		 *摇色子用户可押注类型
+		 big,代表玩家压大，equal代表压和，small代表压小，leopard代表压大
+		*/
+		enum DiceDetainType {big,small,leopard};
+
+		struct basegame {
 			uint64_t g_id;
+			uint64_t randseed;
+			bool end = false;//是否已经开奖
+			time date = time();//开始游戏时间
+			auto primary_key() const {return g_id;}
+
+			EOSLIB_SERIALIZE(basegame,(g_id)(randseed)(end)(date))
+		};
+
+		///@abi table lotterygame i64
+		struct lotterygame:public basegame {
+
 			uint8_t current_index;
 			uint8_t max_palery;//本局玩家人数
 			uint64_t pay;
 			account_name win;
-			auto primary_key() const {return g_id;}
-			EOSLIB_SERIALIZE(game,(g_id)(current_index)(pay)(win));
+
+			EOSLIB_SERIALIZE(lotterygame,(g_id)(randseed)(end)(date)(current_index)(max_palery)(pay)(win));
 		};
+
+		///@abi table dicegame i64
+		struct dicegame:public basegame {
+
+			uint8_t one = 0;//开奖号码1
+			uint8_t two = 0;//开奖号码2
+			uint8_t three = 0;//开奖号码3
+			uint32_t player_num;//本机摇色子人数限制
+			uint32_t current_index = 0;
+			account_name banker;//目前只支持我们做庄
+			EOSLIB_SERIALIZE(dicegame,(g_id)(randseed)(end)(date)(one)(two)(three)(player_num)(current_index)(banker));
+		};
+
+		///@abi table onetoonegame i64
+		struct onetoonegame:public basegame {
+
+			aseet bet;//赌注
+			uint8_t player_num = 0;
+
+			EOSLIB_SERIALIZE(onetoonegame,(g_id)(randseed)(end)(date)(bet)(player_num))
+		};
+
+
+		typedef eosio::multi_index<N(onetoonegame),onetoonegame> onetoonegame_index;
+		typedef eosio::multi_index<N(dicegame),dicegame> dicegame_index;
 		typedef eosio::multi_index<N(game),game> game_index;
 
 		///@abi table player i64
 		struct player {
 
-			uint64_t p_id;
+			uint64_t r_id;
 			account_name player_name;
 			uint64_t g_id;
 			uint64_t number;
-
+			GameType type;//本局参加的游戏
 			auto primary_key() const {return p_id;}
 			uint64_t game_id() const {return g_id;}
 
-			EOSLIB_SERIALIZE(player,(p_id)(player_name)(g_id)(number));
+			EOSLIB_SERIALIZE(player,(p_id)(player_name)(g_id)(number)(type));
 		};
 
-		///@abi table account i64
-		struct account {
-			account(account_name o = account_name()):owner(0){}
-			account_name owner;
-			asset eos_balance;//need fix ,
+		/// @abi table onetoonerecord i64
+		struct onetoonerecord {
 
-			uint64_t primary_key() const {return owner;}
+			uint64_t r_id;
+			account_name player_name;
+			uint64_t g_id;
+			uint8_t number;
+			time date;
+			auto primary_key() const {return r_id;}
+			uint64_t game_id() const {return g_id;}
 
-			EOSLIB_SERIALIZE(account,(owner)(eos_balance));
+			EOSLIB_SERIALIZE(onetoonerecord,(r_id)(player_name)(g_id)(number));
 		};
-		/// 玩家的二级索引，通过g_id检索玩家
-		typedef eosio::multi_index<N(account),account> account_index;
-	
+		
+		/// @abi table dicerecord i64
+		struct dicerecord {
+			uint64_t r_id;
+			account_name player_name;
+			uint64_t g_id;
+			DiceDetainType detain_type;
+			aseet bet;//本次押注
+
+			auto primary_key() const {return r_id;}
+			uint64_t game_id() const {return g_id;}
+
+			EOSLIB_SERIALIZE(dicerecord,(r_id)(player_name)(g_id)(detain_type)(bet));
+
+		};
+		
+		typedef eosio::multi_index<N(onetoonerecord),onetoonerecord,indexed_by<N(bygid),const_mem_fun<onetoonerecord,uint64_t,&onetoonerecord::game_id>>> one2one_record_table_type;
 		typedef eosio::multi_index<N(player),player,indexed_by<N(bygid),const_mem_fun<player,uint64_t,&player::game_id>>> palyer_table_type;
+		typedef eosio::multi_index<N(dicerecord),dicerecord indexed_by<N(bygid),const_mem_fun<dicerecord,uint64_t,&dicerecord::game_id>>> dice_record_table_type;
 		
 		void game_rule(uint64_t g_id) {
 			auto game_index = players.get_index<N(bygid)>();
@@ -183,24 +471,22 @@ public:
 			}
 		}
 
-		///trasform my eos aseet to my asset
-		void trasform_eos_asset_to_my(const asset & quantity) {
-
-		}
-		void checkout_amount(account_name name,uint64_t pay) {
-
-		} 
-		uint32_t rand_number() {
-			return rand_number_a_to_b(1,48);
+		///检测是否为我们的货币
+		void check_my_asset(const asset & quantity) {
+			auto sy_n = S(4,"RCC");
+			eosio_assert(asset.symbol.value = sy_n,"只支持RCC的投注");
 		}
 
-		uint32_t rand_number_a_to_b(uint32_t a, uint32_t b) {
-			uint32_t number = rand() % (b - a + 1) + a;
-			return number;
-		}
+		
+
 		game_index games;
+		dicegame_index dicegames;
+		onetoonegame_index onetoonegames;
+	
 		palyer_table_type players;
-		account_index accounts;
+		one2one_record_table_type one2oneres;
+		dice_record_table_type diceres;
+
 
 
 };
