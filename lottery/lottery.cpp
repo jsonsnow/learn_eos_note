@@ -136,6 +136,7 @@ public:
 
 			uint64_t g_id;
 			uint8_t current_index;
+			uint8_t max_palery;//本局玩家人数
 			uint64_t pay;
 			account_name win;
 			auto primary_key() const {return g_id;}

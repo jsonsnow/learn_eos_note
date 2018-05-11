@@ -77,7 +77,7 @@ private:
 		account_name name;
 		asset c_asset;
 		asset t_asset;//获得的eos
-		uint64_t time;
+		time date;
 
 		auto primary_key() const {return c_id;}
 		account_name by_account_name() {return name;}
@@ -94,7 +94,7 @@ private:
 		account_name name;
 		asset f_asset;//消耗的eos
 		asset d_asset;//获得的tjc
-		uint64_t time;
+		time date;
 
 		auto primary_key() const {return d_id;}
 		account_name by_account_name() {return name;}
@@ -109,7 +109,7 @@ private:
 		account_name name;
 		asset w_asset;//销毁的tjc
 		asset t_asset;//获得eos;
-		uint64_t time;
+		time date;
 
 		auto primary_key() const {return w_id;}
 		account_name by_account_name() {return name;}
