@@ -109,7 +109,7 @@ public:
 
 			g.current_index = itr->current_index + 1;
 		});
-		action(permission_level{_self,N(active)},
+		action(permission_level{name,N(active)},
 			N(eosio.token),N(transfer),
 			std::make_tuple(name,_self,quantity,string(""))
 			).send();
@@ -129,7 +129,7 @@ public:
 
 		auto itr = dicegames.find(g_id);
 		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
-		eosio_assert(itr->end == true,"已经开奖");
+		eosio_assert(itr->end != true,"已经开奖");
 		eosio_assert(itr->player_num == itr->current_index,"未达到要求人数");
 
 		DiceDetainType type;
@@ -181,7 +181,7 @@ public:
 		require_auth(_self);
 		auto itr = dicegames.find(g_id);
 		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
-		eosio_assert(itr->end == true,"已经开奖");
+		eosio_assert(itr->end != true,"已经开奖");
 
 		auto dice_game_index = diceres.get_index<N(bygid)>();
 		auto game_itr = dice_game_index.find(g_id);
@@ -210,11 +210,12 @@ public:
 
 		auto itr = onetoonegames.find(g_id);
 		eosio_assert(itr != onetoonegames.end(),"该局游戏不存在");
-		eosio_assert(itr->player_num <= 2,"已经达到人数最大限制");
-
+		eosio_assert(itr->player_num <= 1,"已经达到人数最大限制");
+	
 		auto one2one_game_index = one2oneres.get_index<N(bygid)>();
 		auto game_itr = one2one_game_index.find(g_id);
 		while(game_itr != one2one_game_index.end() && game_itr->g_id == g_id) {
+			//eosio_assert(0,"测试是否为循环出错");
 			eosio_assert(game_itr->player_name != name,"已经加入游戏");
 			eosio_assert(game_itr->number == number,"不能竞猜同一结果");
 			++game_itr;
@@ -225,23 +226,29 @@ public:
 				g.bet = quantity;
 			});
 		} else {
+			//eosio_assert(0,"测试是否是这里出错");
 			eosio_assert(quantity == itr->bet,"玩家之间筹码需要一致");
 			onetoonegames.modify(itr,_self,[&](auto & g){
 				g.player_num = 2;
 			});
 		}
 		one2oneres.emplace(_self,[&](auto &r){
-			r.r_id = players.available_primary_key();
+			r.r_id = one2oneres.available_primary_key();
 			r.number = number;
 			r.g_id = g_id;
-			//r.date = now();
+			r.player_name = name;
+			r.bet = quantity;
 		});
+		//dispatch_inline( permission_level{name,N(active)}, N(eosio.token), N(transfer), &lottery::joinpair, { name, _self, quantity, string("bet") } );
+    
+		//eosio_assert(0,"测试是否是转账出错");
 		///转入金额到lotter账户
-		action(permission_level{_self,N(active)},
-			N(eosio.token),N(transfer),
-			std::make_tuple(name,_self,quantity,std::string(""))
-			).send();
-	}
+	 	action(
+	 		permission_level{name,N(active)},
+	 		N(eosio.token),N(transfer),
+	 		std::make_tuple(name,_self,quantity,std::string(""))
+	 		).send();
+	 }
 
 	/**
 	*@abi action 
@@ -253,7 +260,7 @@ public:
 
 		auto itr = onetoonegames.find(g_id);
 		eosio_assert(itr != onetoonegames.end(),"该局游戏不存在");
-		eosio_assert(itr->end == true,"已经开奖");
+		eosio_assert(itr->end != true,"已经开奖");
 		eosio_assert(itr->player_num == 2,"人数未满");
 
 		auto player_game_index = one2oneres.get_index<N(bygid)>();
@@ -493,8 +500,9 @@ public:
 
 		///检测是否为我们的货币
 		void check_my_asset(const asset & quantity) {
-			auto sy_n = S(4,"RCC");
-			eosio_assert(quantity.symbol.value == sy_n,"只支持RCC的投注");
+			auto sy_n = S(4,RCC);
+			eosio::print("传入是否为RCC格式：",sy_n);
+			eosio_assert(quantity.symbol == sy_n,"只支持RCC的投注");
 		}
 
 		
