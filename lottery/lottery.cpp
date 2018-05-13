@@ -79,7 +79,7 @@ public:
 	*玩家加入摇色子游戏
 	*/
 
-	void joindicegame(uint64_t g_id,account_name name,asset  quantity,uint8_t detain_type) {
+	void joindicegame(uint64_t g_id,account_name name,asset quantity,uint8_t detain_type) {
 		require_auth(name);//需要用户授权才能扣除用户资金
 		eosio_assert(detain_type == DiceDetainType::big|| detain_type == DiceDetainType::small 
 			|| detain_type == DiceDetainType::leopard,"押注类型错误");
@@ -201,7 +201,7 @@ public:
 
 	/// @abi action 
 	///加入双人游戏
-	void joinonetone(uint64_t g_id,account_name name, asset  quantity,uint8_t number) {
+	void joinpair(uint64_t g_id,account_name name, asset  quantity,uint8_t number) {
 		require_auth(name);
 		eosio_assert(number == 1 || number == 0,"竞猜数字只能是1或者0");
 		eosio_assert(quantity.is_valid(),"invalid quantity");
@@ -234,7 +234,7 @@ public:
 			r.r_id = players.available_primary_key();
 			r.number = number;
 			r.g_id = g_id;
-			r.date = time();
+			//r.date = now();
 		});
 		///转入金额到lotter账户
 		action(permission_level{_self,N(active)},
@@ -247,7 +247,7 @@ public:
 	*@abi action 
 	*开一局两人对战游戏，
 	*/
-	void startonotonegame(uint64_t g_id,uint8_t result,uint64_t randseed) {
+	void startpairgame(uint64_t g_id,uint8_t result,uint64_t randseed) {
 		require_auth(_self);//需要管理者签名,因为需要管理者向赢钱的加入游戏
 		eosio_assert(result == 0 || result == 1,"请传入正确的竞猜结果");
 
@@ -281,7 +281,7 @@ public:
 	* 游戏一直未满，管理员主动结束，返回资金给竞猜者
 	* @abi action 
 	*/
-	void stoponetonegame(uint64_t g_id) {
+	void stoppairgame(uint64_t g_id) {
 		require_auth(_self);
 		auto itr = onetoonegames.find(g_id);
 		eosio_assert(itr != onetoonegames.end(),"该局游戏不存在");
@@ -311,11 +311,11 @@ public:
 	* account_name 
 	*参数无意义，随便传
 	*/
-	void openonetonegame(account_name name) {
+	void openpairgame(account_name name) {
 		require_auth(_self);//只有lottery账户有权限开启一局新的游戏
 		onetoonegames.emplace(_self,[&](auto &g){
 			g.g_id = onetoonegames.available_primary_key();
-			g.date = time();
+			//g.date = now();
 		});
 	}
 
@@ -376,15 +376,14 @@ public:
 		*/
 		enum DiceDetainType {big,small,leopard};
 
-		///@abi table basegame i64
 		struct basegame {
 			uint64_t g_id;
 			uint64_t randseed;
-			bool end = false;//是否已经开奖
-			time date;//开始游戏时间
+			uint8_t end = false;//是否已经开奖
+			time date = now();//开始游戏时间
 			auto primary_key() const {return g_id;}
 
-			EOSLIB_SERIALIZE(basegame,(g_id)(randseed)(end)(date));
+			EOSLIB_SERIALIZE(basegame,(g_id)(randseed)(end));
 		};
 
 		///@abi table lotterygame i64
@@ -432,7 +431,7 @@ public:
 			account_name player_name;
 			uint64_t g_id;
 			uint64_t number;
-			time date ;
+			time date = now();
 			auto primary_key() const {return r_id;}
 			uint64_t game_id() const {return g_id;}
 
@@ -447,7 +446,7 @@ public:
 			uint64_t g_id;
 			uint8_t number;
 			asset bet;
-			time date;
+			time date = now();
 			auto primary_key() const {return r_id;}
 			uint64_t game_id() const {return g_id;}
 
@@ -460,12 +459,12 @@ public:
 			account_name player_name;
 			uint64_t g_id;
 			uint8_t detain_type;
-			time date;
+			time date = now();
 			asset bet;
 			auto primary_key() const {return r_id;}
 			uint64_t game_id() const {return g_id;}
 
-			EOSLIB_SERIALIZE(dicerecord,(r_id)(player_name)(g_id)(detain_type)(date)(bet));
+			EOSLIB_SERIALIZE(dicerecord,(r_id)(player_name)(g_id)(detain_type)(bet)(date));
 
 		};
 		
@@ -511,7 +510,7 @@ public:
 
 
 };
-EOSIO_ABI(lottery,(joindicegame)(opendicegame)(startdciegame)(stopdicegame)(join)(removeplayer)(start)(open)(openonetonegame)(joinonetone)(startonotonegame)(stoponetonegame))
+EOSIO_ABI(lottery,(joindicegame)(opendicegame)(startdciegame)(stopdicegame)(join)(removeplayer)(start)(open)(openpairgame)(joinpair)(startpairgame)(stoppairgame))
 
 
 
