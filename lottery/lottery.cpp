@@ -134,10 +134,10 @@ public:
 
 		DiceDetainType type;
 		uint8_t result = one + two + three;
-		if(result >= 10 ){
+		if(result >= 11 ){
 			type = DiceDetainType::big;
 		}
-		if(result <= 9) {
+		if(result <= 10) {
 			type = DiceDetainType::small;
 		}
 		if((one==two) && (two == three)) {
@@ -152,7 +152,7 @@ public:
 				if(type == DiceDetainType::leopard) {
 					action(permission_level{_self,N(active)},
 					N(eosio.token),N(transfer),
-					std::make_tuple(_self,game_itr->player_name,game_itr->bet * 4,std::string(""))
+					std::make_tuple(_self,game_itr->player_name,game_itr->bet * 24,std::string(""))
 					).send();
 				} else {
 					action(permission_level{_self,N(active)},
@@ -239,20 +239,13 @@ public:
 			r.player_name = name;
 			r.bet = quantity;
 		});
-		
-		SEND_INLINE_ACTION(
-			eosio::token(N(eosio.token)),
-			transfer,
-			{name,N(active)},
-			{name,_self,quantity,string("bet")}
-			);
-		//INLINE_ACTION_SENDER()
+	
 		//转入金额到lotter账户
-	 	// action(
-	 	// 	permission_level{name,N(active)},
-	 	// 	N(eosio.token),N(transfer),
-	 	// 	std::make_tuple(name,_self,quantity,std::string("bet"))
-	 	// 	).send();
+	 	action(
+	 		permission_level{name,N(active)},
+	 		N(eosio.token),N(transfer),
+	 		std::make_tuple(name,_self,quantity,std::string("bet"))
+	 		).send();
 	 	 
 	 }
 
