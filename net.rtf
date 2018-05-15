@@ -1,0 +1,207 @@
+{\rtf1\ansi\ansicpg936\cocoartf1561\cocoasubrtf200
+{\fonttbl\f0\fnil\fcharset134 PingFangSC-Regular;\f1\fswiss\fcharset0 Helvetica;\f2\fnil\fcharset0 Monaco;
+}
+{\colortbl;\red255\green255\blue255;\red117\green66\blue151;\red234\green234\blue234;\red95\green124\blue3;
+\red123\green126\blue121;\red60\green60\blue59;\red240\green115\blue25;\red52\green92\blue158;}
+{\*\expandedcolortbl;;\cssrgb\c53725\c34902\c65882;\cssrgb\c93333\c93333\c93333;\cssrgb\c44314\c54902\c0;
+\cssrgb\c55686\c56471\c54902;\cssrgb\c30196\c30196\c29804;\cssrgb\c96078\c52941\c12157;\cssrgb\c25882\c44314\c68235;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \'cd\'f8\'c2\'e7\'b2\'e3
+\f1 \
+
+\f0 1\'a1\'a2\'ba\'f3\'b6\'cb
+\f1 URL
+\f0 \'cf\'e0\'b9\'d8\'b5\'c4\'b4\'fa\'c2\'eb\'b7\'c5\'d4\'da\'c4\'c4\'c0\'ef
+\f1 \
+
+\f0 2\'a1\'a2\'b6\'cb\'b5\'e3
+\f1 (endpoint,
+\f0 \'bb\'f2\'d5\'dfpath
+\f1 )
+\f0 \'cf\'e0\'b9\'d8\'b4\'fa\'c2\'eb\'b7\'c5\'d4\'da\'c4\'c4\
+3\'a1\'a2\'b9\'b9\'bd\'a8\'c7\'eb\'c7\'f3\'b5\'c4\'b4\'fa\'c2\'eb\'b7\'c5\'d4\'da\'c4\'c4\
+4\'a1\'a2\'ce\'aa\'c7\'eb\'c7\'f3\'d7\'bc\'b1\'b8\'b2\'ce\'ca\'fd\'b5\'c4\'b4\'fa\'c2\'eb\'b7\'c5\'d4\'da\'c4\'c4\
+5\'a1\'a2\'d3\'a6\'b8\'c3\'b0\'c9\'c8\'cf\'d6\'a4\'c1\'ee\'c5\'c6(authentication token)\'b1\'a3\'b4\'e6\'d4\'da\'c4\'c4\
+6\'a1\'a2\'c8\'e7\'ba\'ce\'d6\'b4\'d0\'d0\'c7\'eb\'c7\'f3\
+7\'a1\'a2\'ba\'ce\'ca\'b1\'ba\'ce\'b4\'a6\'d6\'b4\'d0\'d0\'c7\'eb\'c7\'f3\
+8\'a1\'a2\'ca\'c7\'b7\'f1\'bf\'bc\'c2\'c7\'c8\'a1\'cf\'fb\'c7\'eb\'c7\'f3\
+9\'a1\'a2\'ca\'c7\'b7\'f1\'bf\'bc\'c2\'c7\'b4\'ed\'ce\'f3\'b5\'c4\'ba\'f3\'b6\'cb\'cf\'ec\'d3\'a6\'a3\'ac\'ca\'c7\'b7\'f1\'bf\'bc\'c2\'c7\'d2\'bb\'d0\'a9\'ba\'f3\'b6\'cb\'b5\'c4bug\
+10\'a1\'a2\'ca\'c7\'b7\'f1\'d0\'e8\'d2\'aa\'ca\'b9\'d3\'c3\'b5\'da\'c8\'fd\'b7\'bd\'bf\'e2\'a3\'bf\'d3\'a6\'b8\'c3\'ca\'b9\'d3\'c3\'c4\'c7\'d0\'a9\'bf\'e0\
+11\'a1\'a2\'ca\'c7\'b7\'f1\'d3\'d0\'c8\'ce\'ba\'ceCore Data\'cf\'e0\'b9\'d8\'b5\'c4\'b6\'ab\'ce\'f7\'bd\'f8\'d0\'d0\'b4\'ab\'b5\'dd\
+12\'a1\'a2\'c8\'e7\'ba\'ce\'b2\'e2\'ca\'d4\'bd\'e2\'be\'f6\'b7\'bd\'b0\'b8\
+\
+\'ba\'f3\'b6\'cbURL\'bf\'c9\'d2\'d4\'bf\'bc\'c2\'c7RT\'b5\'c4Service\'b7\'bd\'b0\'b8\
+\
+\'b6\'cb\'b5\'e3,\'d2\'d4\'bc\'b0\'b9\'b9\'d4\'ec\'c7\'eb\'c7\'f3\
+protoloc BackendAPIRequest \{\
+\
+	var endpoint:String \{get\}\
+	var method:NetworkService.Method \{get\}\
+	var parameters:[String:AnyObject]? \{get\}\
+	var headers:[String:String]? \{get\}\
+\}\
+\
+Final class SingnUpRequest:BackendApiRequest \{\
+	private let firstName:string\
+	private let lastName:String\
+	init(xxxx,xxx) \{\
+	\
+	\}\
+\
+	var endpoit:String \{\
+	return \'a1\'b0/users\'a1\'b0\
+\}\
+\
+Var paramters:[String\'a3\'baAnyobject]? \{\
+	return [\'a1\'b0first_name\'a1\'b1:firstname]\
+	\}\
+Var headers:[String:String] ?  \{\
+	return [\'a1\'b0Content-type\'a1\'b1,\'a1\'b1application/json\'a1\'b1]\
+\}\
+\}\
+\
+\'ce\'aa\'c1\'cb\'b1\'dc\'c3\'e2\'d7\'dc\'ca\'c7\'ce\'aaheaders\'b4\'b4\'bd\'a8\'d7\'d6\'b5\'e4\'a3\'ac\'bf\'c9\'d2\'d4\'ce\'aaBackendAPIReqeust\'b6\'a8\'d2\'e5\'d2\'bb\'b8\'f6extension\
+Extension BackendAPIRequest \{\
+	func defaultJSONHeaders() -> [String:String] \{\
+		return [\'a1\'b0Contetn-Type\'a1\'b1,\'a1\'b1application/json\'a1\'b1]\
+	\}\
+\}\
+\
+\'d6\'b4\'d0\'d0\'c7\'eb\'c7\'f3\
+\'bf\'c9\'d2\'d4\'d3\'c3AFNetworking\'ba\'cdAlamofire\'a3\'ac\'b2\'bb\'b9\'fdNSURLSession\'bf\'c9\'d2\'d4\'ba\'dc\'ba\'c3\'b5\'c4\'ca\'b5\'cf\'d6\'d0\'e8\'c7\'f3\'a3\'ac\'c3\'bb\'b1\'d8\'d2\'aa\'d2\'fd\'d3\'c3\'b5\'da\'c8\'fd\'b7\'bd\'a1\'a3\
+\
+NetworkService\'ba\'cdBackendService\
+NetworkService\'a3\'ba\'bf\'c9\'d2\'d4\'d6\'b4\'d0\'d0HTTP\'c7\'eb\'c7\'f3\'a3\'ac\'cb\'fc\'c4\'da\'b2\'bf\'bc\'af\'b3\'c9\'c1\'cbNSURLSession,\'c3\'bf\'b8\'f6\'cd\'f8\'c2\'e7\'b7\'fe\'ce\'f1\'d2\'bb\'b4\'ce\'d6\'bb\'c4\'dc\'d6\'b4\'d0\'d0\'d2\'bb\'b8\'f6\'c7\'eb\'c7\'f3\'a3\'ac\'d2\'b2\'c4\'dc\'c8\'a1\'cf\'fb\'c7\'eb\'c7\'f3\'a3\'ac\'b2\'a2\'bb\'d8\'b5\'f7\'ca\'a7\'b0\'dc\'ba\'cd\'b3\'c9\'b9\'a6\
+\
+BackendService:\'d3\'c3\'c0\'b4\'bd\'ab\'c7\'eb\'c7\'f3\'b7\'a2\'cb\'cd\'b8\'f8\'ba\'f3\'b6\'cb\'a3\'ac\'d4\'da\'c4\'da\'b2\'bf\'ca\'b9\'d3\'c3\'c1\'cbNetworkService,\
+\
+Class NetworkService \{\
+	private var task:NSURLSessionDataTask?\
+	private var successCODE:Range<Int> = 200..<299\
+	private var failureCodes: Range<Int> = 400..<499\
+\
+	enmu Method:String\{\
+	case GET,POST,PUT,DELETE\
+\}\
+	func reqeust(url url:NSURL,method:Method,params:[String:AnyObject]? = nil,headers:[String:String]? = nil, success:(NSData?->Void)? = nil,failure) \{\
+	let mutalRequest\
+``````\
+	\}\
+\}\
+\
+\pard\pardeftab720\sl380\partightenfactor0
+
+\f2\fs26 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 class\cf4 \strokec4  \cf5 \strokec5 BackendService\cf4 \strokec4  \cf6 \strokec6 \{
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3     \cf2 \strokec2 private\cf6 \strokec6  \cf2 \strokec2 let\cf6 \strokec6  conf: BackendConfiguration
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3     \cf2 \strokec2 private\cf6 \strokec6  \cf2 \strokec2 let\cf6 \strokec6  service: NetworkService!
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3     \cf2 \strokec2 init\cf6 \strokec6 (\cf7 \strokec7 _\cf6 \strokec6  conf: BackendConfiguration) \{
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3         \cf2 \strokec2 self\cf6 \strokec6 .conf = conf
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3         \cf2 \strokec2 self\cf6 \strokec6 .service = NetworkService()
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3     \}
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3     \cf2 \strokec2 func\cf8 \strokec8  \cf5 \strokec5 request\cf7 \strokec7 (request: BackendAPIRequest,
+\fs21\fsmilli10800 \cf6 \cb1 \strokec6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf7 \cb3 \strokec7                  success: (AnyObject? -> Void)\cf6 \strokec6 ? = \cf7 \strokec7 nil\cf6 \strokec6 ,
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3                  failure: (NSError -> Void)? = \cf7 \strokec7 nil\cf6 \strokec6 ) \{
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3         \cf2 \strokec2 let\cf6 \strokec6  url = conf.baseURL.URLByAppendingPathComponent(request.endpoint)
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3         \cf2 \strokec2 var\cf6 \strokec6  headers = request.headers
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3         \cf5 \strokec5 // 
+\f0 \'b1\'d8\'d2\'aa\'ca\'b1\'c9\'e8\'d6\'c3
+\f2  authentication token
+\fs21\fsmilli10800 \cf6 \cb1 \strokec6 \
+
+\fs26 \cb3         headers?[\cf4 \strokec4 "X-Api-Auth-Token"\cf6 \strokec6 ] = BackendAuth.shared.token
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3         service.request(url: url, method: request.method, params: request.parameters, headers: headers, success: \{ data \cf2 \strokec2 in
+\fs21\fsmilli10800 \cf6 \cb1 \strokec6 \
+
+\fs26 \cb3             \cf2 \strokec2 var\cf6 \strokec6  json: AnyObject? = \cf7 \strokec7 nil
+\fs21\fsmilli10800 \cf6 \cb1 \strokec6 \
+
+\fs26 \cb3             \cf2 \strokec2 if\cf6 \strokec6  \cf2 \strokec2 let\cf6 \strokec6  data = data \{
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3                 json = \cf2 \strokec2 try\cf6 \strokec6 ? NSJSONSerialization.JSONObjectWithData(data, options: [])
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3             \}
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3             success?(json)
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3             \}, failure: \{ data, error, statusCode \cf2 \strokec2 in
+\fs21\fsmilli10800 \cf6 \cb1 \strokec6 \
+
+\fs26 \cb3                 \cf5 \strokec5 // 
+\f0 \'b4\'ed\'ce\'f3\'b4\'a6\'c0\'ed\'a3\'ac\'b2\'a2\'b5\'f7\'d3\'c3\'b4\'ed\'ce\'f3\'b4\'a6\'c0\'ed\'b4\'fa\'c2\'eb
+\f2\fs21\fsmilli10800 \cf6 \cb1 \strokec6 \
+
+\fs26 \cb3         \})
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3     \}
+\fs21\fsmilli10800 \cb1 \
+\pard\pardeftab720\sl320\partightenfactor0
+\cf6 \
+\pard\pardeftab720\sl380\partightenfactor0
+
+\fs26 \cf6 \cb3     \cf2 \strokec2 func\cf8 \strokec8  \cf5 \strokec5 cancel\cf7 \strokec7 ()\cf6 \strokec6  \{
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3         service.cancel()
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3     \}
+\fs21\fsmilli10800 \cb1 \
+
+\fs26 \cb3 \}
+\fs21\fsmilli10800 \
+}
