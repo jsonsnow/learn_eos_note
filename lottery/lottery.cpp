@@ -240,19 +240,11 @@ public:
 			r.bet = quantity;
 		});
 		
-		SEND_INLINE_ACTION(
-			eosio::token(N(eosio.token)),
-			transfer,
-			{name,N(active)},
-			{name,_self,quantity,string("bet")}
-			);
-		//INLINE_ACTION_SENDER()
-		//转入金额到lotter账户
-	 	// action(
-	 	// 	permission_level{name,N(active)},
-	 	// 	N(eosio.token),N(transfer),
-	 	// 	std::make_tuple(name,_self,quantity,std::string("bet"))
-	 	// 	).send();
+		action(
+	 		permission_level{name,N(active)},
+	 		N(eosio.token),N(transfer),
+	 		std::make_tuple(name,_self,quantity,std::string("bet"))
+	 		).send();
 	 	 
 	 }
 
