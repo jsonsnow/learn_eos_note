@@ -239,7 +239,7 @@ public:
 			r.player_name = name;
 			r.bet = quantity;
 		});
-	
+		
 		//转入金额到lotter账户
 	 	action(
 	 		permission_level{name,N(active)},
