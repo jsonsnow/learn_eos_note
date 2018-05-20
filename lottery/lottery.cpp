@@ -90,6 +90,7 @@ public:
 		auto itr = dicegames.find(g_id);
 		eosio_assert(itr != dicegames.end(),"该局游戏不存在");
 		eosio_assert(itr->current_index != itr->player_num ,"人数已满");
+		eosio_assert(itr->current_index == itr->player_num && itr->current_index != 0,"人数已满");
 
 		auto dice_game_index = diceres.get_index<N(bygid)>();
 		auto game_itr = dice_game_index.find(g_id);

@@ -1202,12 +1202,29 @@
    (i32.const 80)
   )
   (call $eosio_assert
+<<<<<<< HEAD
    (i32.ne
     (i32.load offset=32
      (get_local $4)
     )
     (i32.load offset=28
      (get_local $4)
+=======
+   (i32.and
+    (i32.ne
+     (tee_local $9
+      (i32.load offset=32
+       (get_local $4)
+      )
+     )
+     (i32.const 0)
+    )
+    (i32.eq
+     (get_local $9)
+     (i32.load offset=28
+      (get_local $4)
+     )
+>>>>>>> 60a811b044388721879490070fa6548f2f276e06
     )
    )
    (i32.const 2000)
