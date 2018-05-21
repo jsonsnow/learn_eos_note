@@ -50,11 +50,45 @@ public:
 		games.modify(itr,_self,[&](auto &g){
 			g.current_index = g.current_index + 1;
 		});
-		players.emplace(name,[&](auto &p){
-			p.g_id = id;
-			p.number = number;
-			p.player_name = name;
-			p.r_id = players.available_primary_key();
+
+		time date = now();
+		auto record_index = palyer_table_type(_self,name);
+		record_index.emplace(_self,[&](auto &r){
+			r.g_id = id;
+			r.number = number;
+			r.player_name = name;
+			r.r_id = record_index.available_primary_key();
+			r.date = date;
+		});
+
+		players.emplace(_self,[&](auto &r){
+			r.g_id = id;
+			r.number = number;
+			r.player_name = name;
+			r.r_id = players.available_primary_key();
+			r.date = date;
+		});
+	}
+
+	/** 开始游戏,游戏id
+	** @abi action
+	*/
+	void start(uint64_t g_id) {
+		auto itr = games.find(g_id);
+		eosio_assert(itr != games.end(),"游戏不存在");
+		eosio_assert(itr->current_index == 100,"游戏人数不对，无法开始");
+		game_rule(g_id);
+	}
+
+	/** 开一局游戏,指定本局游戏筹码数量
+	* @abi action
+	*/
+
+	void open(uint64_t pay) {
+		games.emplace(_self,[&](auto &g){
+			g.g_id = games.available_primary_key();
+			g.current_index = 0;
+			g.pay = pay;
 		});
 	}
 
@@ -98,12 +132,26 @@ public:
 			++game_itr;
 		}
 
-		diceres.emplace(name,[&](auto &r){
+		time date = now();
+		//具体玩家为scope建表
+		auto record_index = dice_record_type(_self,name);
+		record_index.emplace(name,[&](auto &r){
+			r.r_id = record_index.available_primary_key();
+			r.g_id = g_id;
+			r.detain_type = detain_type;
+			r.bet = quantity;
+			r.player_name = name;
+			r.date = date;
+		});
+
+		//当前合约为scope建表
+		diceres.emplace(_self,[&](auto &r){
 			r.r_id = diceres.available_primary_key();
 			r.g_id = g_id;
 			r.detain_type = detain_type;
 			r.bet = quantity;
 			r.player_name = name;
+			r.date = date;
 		});
 		dicegames.modify(itr,_self,[&](auto &g){
 
@@ -121,7 +169,7 @@ public:
 	* @abi action 
 	*开奖摇色子游戏
 	*/
-	void startdciegame(uint64_t g_id, uint8_t one, uint8_t two,uint8_t three ,uint64_t randseed) {
+	void startdicegame(uint64_t g_id, uint8_t one, uint8_t two,uint8_t three ,uint64_t randseed) {
 		require_auth(_self);
 		eosio_assert(one>=1 && one<= 6,"传入开奖号码有误");
 		eosio_assert(two>=1 && two<= 6,"传入开奖号码有误");
@@ -232,12 +280,25 @@ public:
 				g.player_num = 2;
 			});
 		}
-		one2oneres.emplace(name,[&](auto &r){
+
+		time date = now();
+		auto record_index = pair_record_type(_self,name);
+		record_index.emplace(name,[&](auto &r){
+			r.r_id = record_index.available_primary_key();
+			r.number = number;
+			r.g_id = g_id;
+			r.player_name = name;
+			r.bet = quantity;
+			r.date = date;
+		});
+
+		one2oneres.emplace(_self,[&](auto &r){
 			r.r_id = one2oneres.available_primary_key();
 			r.number = number;
 			r.g_id = g_id;
 			r.player_name = name;
 			r.bet = quantity;
+			r.date = date;
 		});
 		
 		//转入金额到lotter账户
@@ -326,7 +387,7 @@ public:
 	}
 
 
-	/**支付失败的情况下从改局游戏中移除
+	/**支付失败的情况下从改局游戏中移除,这种情况不会存在
 	* @abi action
 	*/
 	void removeplayer(uint64_t g_id,account_name name) {
@@ -349,28 +410,7 @@ public:
 			++game_itr;
 		}
 	}
-	/** 开始游戏,游戏id
-	** @abi action
-	*/
-	void start(uint64_t g_id) {
-		auto itr = games.find(g_id);
-		eosio_assert(itr != games.end(),"游戏不存在");
-		eosio_assert(itr->current_index == 100,"游戏人数不对，无法开始");
-		game_rule(g_id);
-	}
-
-	/** 开一局游戏,指定本局游戏筹码数量
-	* @abi action
-	*/
-
-	void open(uint64_t pay) {
-		games.emplace(_self,[&](auto &g){
-			g.g_id = games.available_primary_key();
-			g.current_index = 0;
-			g.pay = pay;
-		});
-	}
-
+	
 
 	private:
 
@@ -446,7 +486,6 @@ public:
 
 		/// @abi table pairrecord i64
 		struct pairrecord {
-
 			uint64_t r_id;
 			account_name player_name;
 			uint64_t g_id;
@@ -517,7 +556,7 @@ public:
 
 
 };
-EOSIO_ABI(lottery,(joindicegame)(opendicegame)(startdciegame)(stopdicegame)(join)(removeplayer)(start)(open)(openpairgame)(joinpair)(startpairgame)(stoppairgame))
+EOSIO_ABI(lottery,(joindicegame)(opendicegame)(startdicegame)(stopdicegame)(join)(removeplayer)(start)(open)(openpairgame)(joinpair)(startpairgame)(stoppairgame))
 
 
 
