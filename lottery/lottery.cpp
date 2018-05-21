@@ -50,7 +50,7 @@ public:
 		games.modify(itr,_self,[&](auto &g){
 			g.current_index = g.current_index + 1;
 		});
-		players.emplace(_self,[&](auto &p){
+		players.emplace(name,[&](auto &p){
 			p.g_id = id;
 			p.number = number;
 			p.player_name = name;
@@ -98,7 +98,7 @@ public:
 			++game_itr;
 		}
 
-		diceres.emplace(_self,[&](auto &r){
+		diceres.emplace(name,[&](auto &r){
 			r.r_id = diceres.available_primary_key();
 			r.g_id = g_id;
 			r.detain_type = detain_type;
@@ -232,7 +232,7 @@ public:
 				g.player_num = 2;
 			});
 		}
-		one2oneres.emplace(_self,[&](auto &r){
+		one2oneres.emplace(name,[&](auto &r){
 			r.r_id = one2oneres.available_primary_key();
 			r.number = number;
 			r.g_id = g_id;
